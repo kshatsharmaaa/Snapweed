@@ -3,7 +3,7 @@ import next from 'next';
 import { setupWebSocketServer } from './lib/socket-server.mjs';
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = process.env.HOSTNAME || 'localhost';
+const hostname = dev ? 'localhost' : '0.0.0.0';
 const port = parseInt(process.env.PORT || '3000', 10);
 
 const app = next({ dev, hostname, port });
@@ -28,7 +28,7 @@ async function startServer() {
     // Mount WebSocket server onto the HTTP server
     setupWebSocketServer(server);
 
-    server.listen(port, () => {
+    server.listen(port, hostname, () => {
       console.log(`> Ready on http://${hostname}:${port} (WebSocket enabled on ws://${hostname}:${port}/api/ws)`);
     });
 

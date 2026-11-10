@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.gitignore
+firebase-debug.log
+.env*
+npm-debug.log*
+tsconfig.tsbuildinfo
+
