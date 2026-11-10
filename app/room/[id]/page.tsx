@@ -444,21 +444,8 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
     ]);
     setTimeout(() => scrollToBottom(true), 50);
 
-    // 2. Persist to Firestore database
+    // 2. Persist message & room preview metadata to Firestore concurrently
     try {
-      await addDoc(collection(db, "rooms", roomId, "messages"), {
-        text,
-        senderId: user.uid,
-        senderName: userName,
-        senderUsername: `@${userUsername}`,
-        senderPhoto: userPhoto || "",
-        mediaUrl: mediaToSend?.url || "",
-        mediaType: mediaToSend?.type || "",
-        mediaName: mediaToSend?.name || "",
-        createdAt: serverTimestamp(),
-        wsId: clientMsgId
-      });
-
       const summaryPreview = text
         ? text.slice(0, 120)
         : mediaToSend
@@ -467,13 +454,27 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
           : `Sent ${mediaToSend.type.startsWith("image/") ? "a photo" : mediaToSend.type.startsWith("video/") ? "a video" : "a file"}`
         : "Sent a message";
 
-      await updateDoc(doc(db, "rooms", roomId), {
-        lastMessageText: summaryPreview,
-        lastMessageSender: userName,
-        lastMessageSenderUsername: userUsername,
-        lastMessageSenderId: user.uid,
-        lastMessageAt: serverTimestamp(),
-      });
+      await Promise.all([
+        addDoc(collection(db, "rooms", roomId, "messages"), {
+          text,
+          senderId: user.uid,
+          senderName: userName,
+          senderUsername: `@${userUsername}`,
+          senderPhoto: userPhoto || "",
+          mediaUrl: mediaToSend?.url || "",
+          mediaType: mediaToSend?.type || "",
+          mediaName: mediaToSend?.name || "",
+          createdAt: serverTimestamp(),
+          wsId: clientMsgId,
+        }),
+        updateDoc(doc(db, "rooms", roomId), {
+          lastMessageText: summaryPreview,
+          lastMessageSender: userName,
+          lastMessageSenderUsername: userUsername,
+          lastMessageSenderId: user.uid,
+          lastMessageAt: serverTimestamp(),
+        }),
+      ]);
     } catch (err) {
       console.error("Error saving message:", err);
     }
@@ -729,6 +730,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex items-center gap-2 sm:gap-3">
             <NotificationBell
               currentUid={user.uid}
+              activeRoomId={roomId}
               onNavigateTab={(tab) => {
                 router.push(`/dashboard?tab=${tab}`);
               }}

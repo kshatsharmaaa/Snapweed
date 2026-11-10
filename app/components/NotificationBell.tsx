@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { soundManager } from "@/lib/sound";
 
@@ -20,6 +21,7 @@ export interface NotificationItem {
 
 interface NotificationBellProps {
   currentUid: string;
+  activeRoomId?: string;
   onNavigateTab?: (tab: "questions" | "blogs" | "songs") => void;
   onNavigateRoom?: (roomId: string) => void;
 }
@@ -104,32 +106,277 @@ function extractLikeNotifications(
   return likes;
 }
 
+const activeNativeNotifications = new Set<Notification>();
+const PROMPT_DISMISS_KEY = "snapweed_desktop_prompt_dismissed";
+let swRegistrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
+
+function getNotificationTargetUrl(item: NotificationItem): string {
+  if (item.roomId) return `/room/${item.roomId}`;
+  if (item.targetTab) return `/dashboard?tab=${item.targetTab}`;
+  return "/dashboard";
+}
+
+function registerNotificationSw(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return Promise.resolve(null);
+  }
+  if (!swRegistrationPromise) {
+    swRegistrationPromise = navigator.serviceWorker
+      .register("/sw.js")
+      .catch(() => null);
+  }
+  return swRegistrationPromise;
+}
+
+async function showDesktopNotification(
+  title: string,
+  body: string,
+  tag: string,
+  targetUrl: string,
+  item?: NotificationItem,
+  onNativeClick?: () => void
+) {
+  if (
+    typeof window === "undefined" ||
+    !("Notification" in window) ||
+    Notification.permission !== "granted"
+  ) {
+    return;
+  }
+
+  // Prefer Service Worker notifications so Chromium/Brave displays banners reliably
+  // when tabs are throttled and focuses the window smoothly on click.
+  if ("serviceWorker" in navigator) {
+    try {
+      const reg = (await navigator.serviceWorker.getRegistration()) || (await registerNotificationSw());
+      if (reg && reg.active) {
+        await reg.showNotification(title, {
+          body,
+          tag,
+          icon: "/favicon.ico",
+          data: { url: targetUrl, item },
+        });
+        return;
+      }
+    } catch {
+      // Fall back to direct Notification constructor below
+    }
+  }
+
+  try {
+    const nativeNotif = new Notification(title, {
+      body,
+      tag,
+      icon: "/favicon.ico",
+    });
+    activeNativeNotifications.add(nativeNotif);
+    nativeNotif.onclose = () => activeNativeNotifications.delete(nativeNotif);
+    nativeNotif.onerror = () => activeNativeNotifications.delete(nativeNotif);
+    nativeNotif.onclick = () => {
+      window.focus();
+      onNativeClick?.();
+      nativeNotif.close();
+    };
+  } catch {
+    // Ignore browser Notification restrictions
+  }
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function getNotificationBadgeLabel(kind: NotificationKind) {
+  switch (kind) {
+    case "chat":
+      return "Chat";
+    case "blog":
+      return "Blog";
+    case "song":
+      return "Track";
+    case "question":
+      return "Q&A";
+    case "like":
+      return "Like";
+  }
+}
+
+/** Single Gmail-style floating toast card with a self-contained 6-second auto-dismiss timer. */
+function FloatingToastCard({
+  toast,
+  onSelect,
+  onDismiss,
+}: {
+  toast: NotificationItem;
+  onSelect: (item: NotificationItem) => void;
+  onDismiss: (id: string) => void;
+}) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onDismiss(toast.id);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [toast.id, onDismiss]);
+
+  return (
+    <div
+      className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-3.5 animate-toast-in flex items-start gap-2.5 cursor-pointer hover:opacity-95 transition-opacity"
+      style={{ borderColor: "var(--pastel-border)" }}
+      onClick={() => onSelect(toast)}
+      role="status"
+    >
+      <span
+        className="mt-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 border"
+        style={{
+          backgroundColor: "var(--pastel-tint)",
+          borderColor: "var(--pastel-border)",
+          color: "var(--pastel-primary)",
+        }}
+      >
+        {getNotificationBadgeLabel(toast.kind)}
+      </span>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-black truncate" style={{ color: "var(--pastel-text)" }}>
+            {toast.title}
+          </p>
+          <span className="text-[10px] font-semibold shrink-0" style={{ color: "var(--pastel-primary)" }}>
+            Just now
+          </span>
+        </div>
+        <p className="text-[11px] line-clamp-2 mt-0.5" style={{ color: "var(--pastel-subtext)" }}>
+          {toast.snippet}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss(toast.id);
+        }}
+        className="p-1 rounded-full hover:bg-stone-100 shrink-0 cursor-pointer"
+        style={{ color: "var(--pastel-subtext)" }}
+        aria-label="Dismiss notification"
+      >
+        <CloseIcon />
+      </button>
+    </div>
+  );
+}
+
 export function NotificationBell({
   currentUid,
+  activeRoomId,
   onNavigateTab,
   onNavigateRoom,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [filter, setFilter] = useState<"all" | "chats" | "posts" | "likes">("all");
+  const [filter, setFilter] = useState<"all" | "posts" | "likes">("all");
   const [nowMillis, setNowMillis] = useState<number>(0);
+  const [portalMounted, setPortalMounted] = useState(false);
+  const [desktopPerm, setDesktopPerm] = useState<"default" | "granted" | "denied" | "unsupported">("unsupported");
+  const [promptDismissed, setPromptDismissed] = useState(true);
 
-  const [roomNotifs, setRoomNotifs] = useState<NotificationItem[]>([]);
   const [blogNotifs, setBlogNotifs] = useState<NotificationItem[]>([]);
   const [songNotifs, setSongNotifs] = useState<NotificationItem[]>([]);
   const [questionNotifs, setQuestionNotifs] = useState<NotificationItem[]>([]);
+  const [floatingToasts, setFloatingToasts] = useState<NotificationItem[]>([]);
 
   const [readIds, setReadIds] = useState<string[]>(() => getStoredReadIds(currentUid));
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const knownIdsRef = useRef<Set<string> | null>(null);
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  const loadedStreamsRef = useRef({
+    rooms: false,
+    blogs: false,
+    songs: false,
+    questions: false,
+  });
+  const readIdsRef = useRef<string[]>(readIds);
+  const baseTitleRef = useRef<string>("");
+  const hiddenAlertCountRef = useRef<number>(0);
 
-  // Keep relative clock synced
   useEffect(() => {
-    const initTimer = setTimeout(() => setNowMillis(Date.now()), 0);
+    readIdsRef.current = readIds;
+  }, [readIds]);
+
+  // Sync relative clock, client portal flag, Service Worker, and Desktop Notification permission status
+  useEffect(() => {
+    let permStatus: PermissionStatus | null = null;
+    const handlePermChange = () => {
+      if (typeof window !== "undefined" && "Notification" in window) {
+        setDesktopPerm(Notification.permission);
+      }
+    };
+
+    const initTimer = setTimeout(() => {
+      setPortalMounted(true);
+      setNowMillis(Date.now());
+      baseTitleRef.current = document.title.replace(/^\(\d+\)\s*/, "");
+
+      if (typeof window !== "undefined" && "Notification" in window) {
+        const perm = Notification.permission;
+        setDesktopPerm(perm);
+        if (perm === "granted") {
+          void registerNotificationSw();
+        }
+        try {
+          setPromptDismissed(sessionStorage.getItem(PROMPT_DISMISS_KEY) === "1");
+        } catch {
+          setPromptDismissed(false);
+        }
+        if ("permissions" in navigator && typeof navigator.permissions.query === "function") {
+          navigator.permissions
+            .query({ name: "notifications" as PermissionName })
+            .then((status) => {
+              permStatus = status;
+              status.addEventListener("change", handlePermChange);
+            })
+            .catch(() => {});
+        }
+      } else {
+        setDesktopPerm("unsupported");
+      }
+    }, 0);
+
+    const resetHiddenTitle = () => {
+      if (!document.hidden && document.hasFocus() && hiddenAlertCountRef.current > 0) {
+        hiddenAlertCountRef.current = 0;
+        if (baseTitleRef.current) {
+          document.title = baseTitleRef.current;
+        }
+      }
+    };
+
+    window.addEventListener("focus", resetHiddenTitle);
+    document.addEventListener("visibilitychange", resetHiddenTitle);
     const interval = setInterval(() => setNowMillis(Date.now()), 30000);
+
     return () => {
       clearTimeout(initTimer);
       clearInterval(interval);
+      window.removeEventListener("focus", resetHiddenTitle);
+      document.removeEventListener("visibilitychange", resetHiddenTitle);
+      if (permStatus) {
+        permStatus.removeEventListener("change", handlePermChange);
+      }
     };
   }, []);
 
@@ -148,36 +395,153 @@ export function NotificationBell({
     };
   }, []);
 
-  // 1. Listen to Chat Messages in user's active rooms & all community posts
+  const markAsRead = useCallback(
+    (id: string) => {
+      setReadIds((prev) => {
+        if (prev.includes(id)) return prev;
+        const next = [...prev, id];
+        persistReadIds(currentUid, next);
+        return next;
+      });
+    },
+    [currentUid]
+  );
+
+  const dismissToast = useCallback((id: string) => {
+    setFloatingToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const handleNotificationClick = useCallback(
+    (item: NotificationItem) => {
+      markAsRead(item.id);
+      dismissToast(item.id);
+      setIsOpen(false);
+      if (item.roomId && onNavigateRoom) {
+        onNavigateRoom(item.roomId);
+      } else if (item.targetTab && onNavigateTab) {
+        onNavigateTab(item.targetTab);
+      }
+    },
+    [markAsRead, dismissToast, onNavigateRoom, onNavigateTab]
+  );
+
+  const onNotificationClickRef = useRef(handleNotificationClick);
   useEffect(() => {
+    onNotificationClickRef.current = handleNotificationClick;
+  }, [handleNotificationClick]);
+
+  // Route clicks arriving from Service Worker desktop notifications cleanly within the SPA
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    const handleSwMessage = (event: MessageEvent) => {
+      if (event.data?.type === "SNAPWEED_NOTIFICATION_CLICK" && event.data.item) {
+        onNotificationClickRef.current(event.data.item as NotificationItem);
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", handleSwMessage);
+    return () => {
+      navigator.serviceWorker.removeEventListener("message", handleSwMessage);
+    };
+  }, []);
+
+  const emitLiveNotifications = useCallback(
+    (streamKey: "rooms" | "blogs" | "songs" | "questions", items: NotificationItem[]) => {
+      if (!loadedStreamsRef.current[streamKey]) {
+        items.forEach((item) => seenIdsRef.current.add(item.id));
+        loadedStreamsRef.current[streamKey] = true;
+        return;
+      }
+
+      const freshFromOthers: NotificationItem[] = [];
+      items.forEach((item) => {
+        if (!seenIdsRef.current.has(item.id)) {
+          seenIdsRef.current.add(item.id);
+          if (item.actorId !== currentUid && !readIdsRef.current.includes(item.id)) {
+            freshFromOthers.push(item);
+          }
+        }
+      });
+
+      if (freshFromOthers.length === 0) return;
+
+      const isTabHiddenOrUnfocused =
+        typeof document !== "undefined" && (document.hidden || !document.hasFocus());
+
+      let shouldChime = false;
+
+      freshFromOthers.forEach((item) => {
+        const isCurrentChatRoom = Boolean(activeRoomId && item.roomId === activeRoomId);
+
+        // 1. OS / Browser Desktop Notification when user is on another window, another app, or background tab
+        if (
+          isTabHiddenOrUnfocused &&
+          typeof window !== "undefined" &&
+          "Notification" in window &&
+          Notification.permission === "granted"
+        ) {
+          shouldChime = true;
+          hiddenAlertCountRef.current += 1;
+          if (baseTitleRef.current) {
+            document.title = `(${hiddenAlertCountRef.current}) ${baseTitleRef.current}`;
+          }
+          void showDesktopNotification(
+            item.title,
+            item.snippet,
+            item.id,
+            getNotificationTargetUrl(item),
+            item,
+            () => onNotificationClickRef.current(item)
+          );
+        }
+
+        // 2. Floating in-app Gmail-style Toast when viewing Dashboard/another room, or when tab/window was unfocused
+        if (!isCurrentChatRoom || isTabHiddenOrUnfocused) {
+          shouldChime = true;
+          setFloatingToasts((prev) => {
+            if (prev.some((t) => t.id === item.id)) return prev;
+            return [item, ...prev].slice(0, 3);
+          });
+        }
+      });
+
+      if (shouldChime) {
+        soundManager.play("pop");
+      }
+    },
+    [currentUid, activeRoomId]
+  );
+
+  // Subscribe to Firestore streams (Rooms chat messages trigger floating/OS alerts only; community posts populate Bell drawer + floating/OS alerts)
+  useEffect(() => {
+    if (!currentUid) return;
+
     const unsubRooms = onSnapshot(
-      query(collection(db, "rooms")),
+      query(collection(db, "rooms"), where("participants", "array-contains", currentUid)),
       (snap) => {
         const list: NotificationItem[] = [];
         snap.docs.forEach((d) => {
           const data = d.data();
           if (data.status === "terminated") return;
-          if (!Array.isArray(data.participants) || !data.participants.includes(currentUid)) return;
 
           const lastMsgTs = parseTimestampMillis(data.lastMessageAt);
           if (lastMsgTs > 0 && data.lastMessageText) {
+            const textPreview = String(data.lastMessageText);
             list.push({
-              id: `notif_msg_${d.id}_${lastMsgTs}`,
+              id: `notif_msg_${d.id}_${lastMsgTs}_${textPreview.slice(0, 12)}`,
               kind: "chat",
               title: `Chat in Room #${data.securityCode || "Room"}`,
-              snippet: `${data.lastMessageSender || "Member"}: "${data.lastMessageText}"`,
+              snippet: `${data.lastMessageSender || "Member"}: "${textPreview}"`,
               actorId: data.lastMessageSenderId || "",
               timestamp: lastMsgTs,
               roomId: d.id,
             });
           }
         });
-        setRoomNotifs(list);
+        emitLiveNotifications("rooms", list);
       },
       () => {}
     );
 
-    // 2. Listen to Blogs & Likes on user's blogs
     const unsubBlogs = onSnapshot(
       query(collection(db, "blogs")),
       (snap) => {
@@ -200,11 +564,11 @@ export function NotificationBell({
           );
         });
         setBlogNotifs(list);
+        emitLiveNotifications("blogs", list);
       },
       () => {}
     );
 
-    // 3. Listen to Song Recommendations & Likes on user's tracks
     const unsubSongs = onSnapshot(
       query(collection(db, "song_recommendations")),
       (snap) => {
@@ -227,11 +591,11 @@ export function NotificationBell({
           );
         });
         setSongNotifs(list);
+        emitLiveNotifications("songs", list);
       },
       () => {}
     );
 
-    // 4. Listen to Questions & Replies
     const unsubQuestions = onSnapshot(
       query(collection(db, "questions")),
       (snap) => {
@@ -264,6 +628,7 @@ export function NotificationBell({
           }
         });
         setQuestionNotifs(list);
+        emitLiveNotifications("questions", list);
       },
       () => {}
     );
@@ -274,36 +639,13 @@ export function NotificationBell({
       unsubSongs();
       unsubQuestions();
     };
-  }, [currentUid]);
+  }, [currentUid, emitLiveNotifications]);
 
   const allNotifications = useMemo(() => {
-    const combined = [...roomNotifs, ...blogNotifs, ...songNotifs, ...questionNotifs];
+    const combined = [...blogNotifs, ...songNotifs, ...questionNotifs];
     combined.sort((a, b) => b.timestamp - a.timestamp);
     return combined.slice(0, 30);
-  }, [roomNotifs, blogNotifs, songNotifs, questionNotifs]);
-
-  // Gently chime when a genuinely new unread item from someone else arrives
-  useEffect(() => {
-    if (allNotifications.length === 0) return;
-    if (knownIdsRef.current === null) {
-      knownIdsRef.current = new Set(allNotifications.map((n) => n.id));
-      return;
-    }
-
-    let hasNewFromOther = false;
-    allNotifications.forEach((n) => {
-      if (!knownIdsRef.current!.has(n.id)) {
-        knownIdsRef.current!.add(n.id);
-        if (n.actorId !== currentUid && !readIds.includes(n.id)) {
-          hasNewFromOther = true;
-        }
-      }
-    });
-
-    if (hasNewFromOther) {
-      soundManager.play("pop");
-    }
-  }, [allNotifications, currentUid, readIds]);
+  }, [blogNotifs, songNotifs, questionNotifs]);
 
   const unreadCount = useMemo(() => {
     return allNotifications.filter(
@@ -312,7 +654,6 @@ export function NotificationBell({
   }, [allNotifications, currentUid, readIds]);
 
   const filteredNotifications = useMemo(() => {
-    if (filter === "chats") return allNotifications.filter((n) => n.kind === "chat");
     if (filter === "posts") {
       return allNotifications.filter(
         (n) => n.kind === "blog" || n.kind === "song" || n.kind === "question"
@@ -322,41 +663,36 @@ export function NotificationBell({
     return allNotifications;
   }, [allNotifications, filter]);
 
-  const markAsRead = (id: string) => {
-    if (readIds.includes(id)) return;
-    const next = [...readIds, id];
-    setReadIds(next);
-    persistReadIds(currentUid, next);
-  };
-
   const handleMarkAllRead = () => {
     const next = Array.from(new Set([...readIds, ...allNotifications.map((n) => n.id)]));
     setReadIds(next);
     persistReadIds(currentUid, next);
   };
 
-  const handleNotificationClick = (item: NotificationItem) => {
-    markAsRead(item.id);
-    setIsOpen(false);
-    if (item.roomId && onNavigateRoom) {
-      onNavigateRoom(item.roomId);
-    } else if (item.targetTab && onNavigateTab) {
-      onNavigateTab(item.targetTab);
-    }
+  const handleDismissPrompt = () => {
+    setPromptDismissed(true);
+    try {
+      sessionStorage.setItem(PROMPT_DISMISS_KEY, "1");
+    } catch {}
   };
 
-  const getBadgeLabel = (kind: NotificationKind) => {
-    switch (kind) {
-      case "chat":
-        return "Chat";
-      case "blog":
-        return "Blog";
-      case "song":
-        return "Track";
-      case "question":
-        return "Q&A";
-      case "like":
-        return "Like";
+  const handleRequestDesktopPermission = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    try {
+      const result = await Notification.requestPermission();
+      setDesktopPerm(result);
+      if (result === "granted") {
+        setPromptDismissed(true);
+        await registerNotificationSw();
+        await showDesktopNotification(
+          "Snapweed Desktop Alerts Enabled",
+          "Live chat messages and community updates will now float outside your browser window.",
+          "snapweed_test_enabled",
+          "/dashboard"
+        );
+      }
+    } catch {
+      // Ignore permission rejection
     }
   };
 
@@ -408,7 +744,7 @@ export function NotificationBell({
         >
           {/* Header */}
           <div
-            className="px-4 py-3 border-b flex items-center justify-between"
+            className="px-4 py-3 border-b flex items-center justify-between gap-2"
             style={{
               backgroundColor: "var(--pastel-tint)",
               borderColor: "var(--pastel-border)",
@@ -428,24 +764,72 @@ export function NotificationBell({
               )}
             </div>
 
-            {allNotifications.length > 0 && (
-              <button
-                type="button"
-                onClick={handleMarkAllRead}
-                className="text-[11px] font-bold hover:underline cursor-pointer"
-                style={{ color: "var(--pastel-primary)" }}
-              >
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-2.5">
+              {desktopPerm === "default" && (
+                <button
+                  type="button"
+                  onClick={handleRequestDesktopPermission}
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border hover:opacity-85 cursor-pointer"
+                  style={{
+                    borderColor: "var(--pastel-border)",
+                    color: "var(--pastel-text)",
+                  }}
+                  title="Get browser popups even when tab is in background"
+                >
+                  Enable desktop alerts
+                </button>
+              )}
+              {desktopPerm === "granted" && (
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border"
+                  style={{
+                    borderColor: "var(--pastel-border)",
+                    color: "var(--pastel-primary)",
+                  }}
+                >
+                  Desktop on
+                </span>
+              )}
+              {desktopPerm === "denied" && (
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border"
+                  style={{
+                    borderColor: "var(--pastel-border)",
+                    color: "var(--pastel-subtext)",
+                  }}
+                  title="Allow notifications for this site in your browser settings"
+                >
+                  Blocked
+                </span>
+              )}
+              {allNotifications.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className="text-[11px] font-bold hover:underline cursor-pointer"
+                  style={{ color: "var(--pastel-primary)" }}
+                >
+                  Mark all read
+                </button>
+              )}
+            </div>
           </div>
+
+          {desktopPerm === "denied" && (
+            <div
+              className="px-4 py-2 border-b text-[11px] bg-white"
+              style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-subtext)" }}
+            >
+              Browser notifications are blocked. Allow notifications for this site in browser settings to receive outside-window popups.
+            </div>
+          )}
 
           {/* Filter Tabs */}
           <div
             className="px-3 py-2 border-b flex gap-1.5 bg-white"
             style={{ borderColor: "var(--pastel-border)" }}
           >
-            {(["all", "chats", "posts", "likes"] as const).map((tabKey) => {
+            {(["all", "posts", "likes"] as const).map((tabKey) => {
               const active = filter === tabKey;
               return (
                 <button
@@ -472,7 +856,7 @@ export function NotificationBell({
                   All caught up
                 </p>
                 <p className="text-[11px]" style={{ color: "var(--pastel-subtext)" }}>
-                  Updates about chats, blogs, tracks, and questions will appear here.
+                  Updates about blogs, tracks, and questions will appear here.
                 </p>
               </div>
             ) : (
@@ -497,7 +881,7 @@ export function NotificationBell({
                         color: "var(--pastel-primary)",
                       }}
                     >
-                      {getBadgeLabel(item.kind)}
+                      {getNotificationBadgeLabel(item.kind)}
                     </span>
 
                     <div className="flex-1 min-w-0">
@@ -528,7 +912,74 @@ export function NotificationBell({
           </div>
         </div>
       )}
+
+      {/* Floating Gmail-style Live Toast Stack & Desktop Alert Opt-In rendered via Portal directly on document.body */}
+      {portalMounted &&
+        (floatingToasts.length > 0 || (desktopPerm === "default" && !promptDismissed)) &&
+        createPortal(
+          <div
+            className="fixed top-16 right-4 sm:right-6 z-50 flex flex-col gap-2.5 w-80 sm:w-96 pointer-events-none"
+            style={{ colorScheme: "light" }}
+            aria-live="polite"
+          >
+            {desktopPerm === "default" && !promptDismissed && (
+              <div
+                className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-3.5 animate-toast-in"
+                style={{ borderColor: "var(--pastel-border)" }}
+                role="region"
+                aria-label="Enable desktop alerts"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-black" style={{ color: "var(--pastel-text)" }}>
+                      Enable outside-window alerts
+                    </p>
+                    <p className="text-[11px] mt-0.5 leading-snug" style={{ color: "var(--pastel-subtext)" }}>
+                      See floating chat and live update notifications even when you are in another window or app.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDismissPrompt}
+                    className="p-1 rounded-full hover:bg-stone-100 shrink-0 cursor-pointer"
+                    style={{ color: "var(--pastel-subtext)" }}
+                    aria-label="Dismiss alert prompt"
+                  >
+                    <CloseIcon />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 mt-2.5">
+                  <button
+                    type="button"
+                    onClick={handleRequestDesktopPermission}
+                    className="px-3 py-1 rounded-xl text-[11px] font-bold text-white cursor-pointer hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: "var(--pastel-primary)" }}
+                  >
+                    Enable alerts
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDismissPrompt}
+                    className="px-2.5 py-1 rounded-xl text-[11px] font-semibold cursor-pointer hover:bg-stone-100 transition-colors"
+                    style={{ color: "var(--pastel-subtext)" }}
+                  >
+                    Not now
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {floatingToasts.map((toast) => (
+              <FloatingToastCard
+                key={`toast_${toast.id}`}
+                toast={toast}
+                onSelect={handleNotificationClick}
+                onDismiss={dismissToast}
+              />
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
-
