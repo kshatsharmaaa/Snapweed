@@ -3,7 +3,7 @@ import "./globals.css";
 import { PastelFallingLeaves } from "./components/PastelFallingLeaves";
 
 export const metadata: Metadata = {
-  title: "Snapweed — Real-time Chat & Cozy Community",
+  title: "Snapweed",
   description: "A gentle pastel space for real-time chats, favorite songs, questions, and personal logs.",
 };
 

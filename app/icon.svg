@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bubbleGrad" x1="8" y1="5" x2="56" y2="53" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f294a3" />
+      <stop offset="100%" stop-color="#d46375" />
+    </linearGradient>
+    <linearGradient id="leafTint" x1="21" y1="37" x2="45" y2="13" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#effcf3" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Smooth Blush-Rose Chat Bubble -->
+  <path
+    d="M 21 5 H 43 A 16 16 0 0 1 59 21 V 31 A 16 16 0 0 1 43 47 H 25.5 C 21 51.5 15 55.8 10.5 57.5 C 8.3 58.3 6.8 57 7.6 54.7 C 9.2 50 8.6 46.2 6.4 41.5 C 5.4 39.2 5 36.2 5 33 V 21 A 16 16 0 0 1 21 5 Z"
+    fill="url(#bubbleGrad)"
+    stroke="#fde8ec"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+
+  <!-- Cozy Botanical Leaf Blade -->
+  <path
+    d="M 22 36 C 19 23.5 27.5 13 44 14 C 45 30.5 34.5 39 22 36 Z"
+    fill="url(#leafTint)"
+  />
+
+  <!-- Subtle Matcha-Mint Lower Leaf Half -->
+  <path
+    d="M 22 36 L 44 14 C 45 30.5 34.5 39 22 36 Z"
+    fill="#bce6c7"
+    fill-opacity="0.52"
+  />
+
+  <!-- Delicate Curved Stem & Inner Leaf Vein -->
+  <path
+    d="M 17 39.5 Q 19.6 37.8 22.4 35.6"
+    stroke="#ffffff"
+    stroke-width="2.1"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M 24.4 33.6 Q 30.2 27.8 36.5 21.5"
+    stroke="#d87080"
+    stroke-width="2"
+    stroke-linecap="round"
+    fill="none"
+  />
+</svg>
