@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, use, useCallback } from "react";
+import { useEffect, useState, useRef, use, useCallback, ReactNode } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { 
   doc, 
@@ -87,6 +87,65 @@ function formatTime(createdAt: unknown) {
   } catch {
     return "";
   }
+}
+
+const EMOJI_MATCH_REGEX =
+  /(?:[\u{1F1E6}-\u{1F1FF}]{2}|[0-9#*]\uFE0F?\u20E3|(?:\p{Extended_Pictographic}(?:\uFE0F|\u{1F3FB}|\u{1F3FC}|\u{1F3FD}|\u{1F3FE}|\u{1F3FF})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\u{1F3FB}|\u{1F3FC}|\u{1F3FD}|\u{1F3FE}|\u{1F3FF})?)*))/gu;
+
+function renderChatMessageText(text: string): ReactNode {
+  const matches = Array.from(text.matchAll(EMOJI_MATCH_REGEX));
+  if (matches.length === 0) {
+    return <div className="break-words">{text}</div>;
+  }
+
+  const stripped = text.replace(EMOJI_MATCH_REGEX, "").trim();
+  if (stripped.length === 0 && matches.length <= 6) {
+    const sizeClass =
+      matches.length === 1
+        ? "text-[44px] leading-tight py-1"
+        : matches.length <= 3
+        ? "text-[34px] leading-tight py-0.5 tracking-wide"
+        : "text-[28px] leading-snug tracking-wide";
+
+    return (
+      <div
+        className={`break-words ${sizeClass}`}
+        style={{
+          fontFamily: "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif",
+        }}
+      >
+        {text}
+      </div>
+    );
+  }
+
+  const parts: ReactNode[] = [];
+  let cursor = 0;
+  matches.forEach((m, idx) => {
+    const start = m.index ?? 0;
+    const emojiStr = m[0];
+    if (start > cursor) {
+      parts.push(<span key={`t_${idx}_${cursor}`}>{text.slice(cursor, start)}</span>);
+    }
+    parts.push(
+      <span
+        key={`e_${idx}_${start}`}
+        className="text-[22px] leading-none inline-block align-[-3px] mx-[1px]"
+        style={{
+          fontFamily: "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif",
+        }}
+      >
+        {emojiStr}
+      </span>
+    );
+    cursor = start + emojiStr.length;
+  });
+
+  if (cursor < text.length) {
+    parts.push(<span key={`t_end_${cursor}`}>{text.slice(cursor)}</span>);
+  }
+
+  return <div className="break-words">{parts}</div>;
 }
 
 export default function Room({ params }: { params: Promise<{ id: string }> }) {
@@ -852,7 +911,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                           </div>
                         )}
 
-                        {msg.text && <div className="break-words">{msg.text}</div>}
+                        {msg.text && renderChatMessageText(msg.text)}
 
                         {timeStr && (
                           <div className={`text-[10px] mt-0.5 text-right select-none ${isMe ? "text-white/80" : "text-[var(--pastel-subtext)]"}`}>
@@ -987,7 +1046,11 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                 sendTyping(e.target.value.length > 0);
               }}
               placeholder="Write a message..."
-              className="flex-1 py-2.5 px-4 rounded-full border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+              className="flex-1 py-2.5 px-4 rounded-full border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] text-base focus:outline-none focus:bg-white focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+              style={{
+                fontFamily:
+                  "system-ui, -apple-system, BlinkMacSystemFont, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji'",
+              }}
             />
 
             <button

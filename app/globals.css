@@ -99,7 +99,7 @@ html, body {
   color-scheme: light !important;
   background-color: var(--pastel-bg) !important;
   color: var(--pastel-text) !important;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
