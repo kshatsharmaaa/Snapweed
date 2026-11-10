@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: snapweed
+    runtime: docker
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GIPHY_API_KEY
+        sync: false
+      - key: TENOR_API_KEY
+        sync: false
+

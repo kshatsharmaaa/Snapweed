@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { PastelFallingLeaves } from "./components/PastelFallingLeaves";
 
 export const metadata: Metadata = {
   title: "Snapweed — Real-time Chat & Cozy Community",
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" data-theme="blush" style={{ colorScheme: "light" }}>
       <body className="min-h-full flex flex-col font-sans transition-colors duration-200" style={{ colorScheme: "light" }}>
+        <PastelFallingLeaves />
         {children}
       </body>
     </html>

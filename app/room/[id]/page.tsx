@@ -582,7 +582,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
     <div className="h-screen flex flex-col bg-[var(--pastel-bg)] text-[var(--pastel-text)] font-sans overflow-hidden" style={{ colorScheme: "light" }}>
         
       {/* Full-width Pastel Header with max-w-4xl inner alignment */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-[var(--pastel-border)] px-4 sm:px-6 py-3 z-20 shrink-0">
+      <header className="bg-white/90 backdrop-blur-md border-b border-[var(--pastel-border)] px-4 sm:px-6 py-3 z-30 shrink-0">
         <div className="max-w-4xl mx-auto w-full flex items-center justify-between">
           
           {/* Left: Back & Room Info */}
@@ -884,7 +884,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
       </main>
 
       {/* Input Bar */}
-      <footer className="p-3 sm:p-4 pb-5 bg-white border-t border-[var(--pastel-border)] shrink-0">
+      <footer className="relative z-30 p-3 sm:p-4 pb-5 bg-white border-t border-[var(--pastel-border)] shrink-0">
         <div className="max-w-4xl mx-auto w-full space-y-2">
           {/* Media Error Notice */}
           {mediaError && (

@@ -8,10 +8,16 @@
     "dev:ws": "node lib/socket-server.mjs",
     "build": "next build",
     "start": "NODE_ENV=production node server.mjs",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:frontend": "node scripts/deploy-frontend.mjs",
+    "deploy:backend": "node scripts/deploy-backend.mjs",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:git": "git push origin main",
+    "deploy": "npm run deploy:backend && npm run deploy:frontend"
   },
   "dependencies": {
     "@types/ws": "^8.18.2",
+    "falling-leaves": "^0.1.0",
     "firebase": "^12.18.0",
     "next": "16.3.0",
     "react": "19.2.8",
