@@ -1,0 +1,57 @@
+[debug] [2026-11-10T05:37:26.563Z] ----------------------------------------------------------------------
+[debug] [2026-11-10T05:37:26.565Z] Command:       /Users/akshat/.nvm/versions/node/v22.23.4/bin/node /Users/akshat/.nvm/versions/node/v22.23.4/bin/firebase projects:list
+[debug] [2026-11-10T05:37:26.565Z] CLI Version:   15.34.1
+[debug] [2026-11-10T05:37:26.565Z] Platform:      darwin
+[debug] [2026-11-10T05:37:26.566Z] Node Version:  v22.23.4
+[debug] [2026-11-10T05:37:26.566Z] Detected Agent: antigravity
+[debug] [2026-11-10T05:37:26.566Z] Time:          Tue Nov 10 2026 11:07:26 GMT+0530 (India Standard Time)
+[debug] [2026-11-10T05:37:26.566Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-11-10T05:37:26.574Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-11-10T05:37:26.585Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-11-10T05:37:26.585Z] > authorizing via signed-in user (akshat.sharma@bugsmirror.com)
+[debug] [2026-11-10T05:37:26.587Z] Checked if tokens are valid: false, expires at: 1793963617026
+[debug] [2026-11-10T05:37:26.587Z] Checked if tokens are valid: false, expires at: 1793963617026
+[debug] [2026-11-10T05:37:26.587Z] > refreshing access token with scopes: []
+[debug] [2026-11-10T05:37:26.588Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-11-10T05:37:26.588Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-11-10T05:37:26.610Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 403
+[debug] [2026-11-10T05:37:26.610Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-11-10T05:37:26.610Z] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-11-10T05:37:26.611Z] FirebaseError: Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+    at invalidCredentialError (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/auth.js:177:12)
+    at refreshTokens (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/auth.js:612:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async getAccessToken (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/apiv2.js:53:18)
+    at async Client.addAuthHeader (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/apiv2.js:209:21)
+    at async Client.request (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/apiv2.js:156:34)
+    at async getProjectPage (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/management/projects.js:301:17)
+    at async getFirebaseProjectPage (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/management/projects.js:318:23)
+    at async listFirebaseProjects (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/management/projects.js:347:29)
+    at async Command.actionFn (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/commands/projects-list.js:51:20)
+[error] 
+[error] Error: Failed to list Firebase projects. See firebase-debug.log for more info.
+[debug] [2026-11-10T05:37:26.612Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 403
+[debug] [2026-11-10T05:37:26.612Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json "Request to GET /cli.json on firebase-public.firebaseio.com not allowed by policy\n"
+[warn] ⚠  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection. 
+[debug] [2026-11-10T05:37:26.613Z] Failed to fetch MOTD FirebaseError: Unable to parse JSON: SyntaxError: Unexpected token 'R', "Request to"... is not valid JSON
+[debug] [2026-11-10T05:37:26.887Z] Error: EPERM: operation not permitted, open '/Users/akshat/.config/configstore/firebase-tools.json.3902060635'
+    at Object.openSync (node:fs:560:18)
+    at Function.writeFileSync [as sync] (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/node_modules/write-file-atomic/index.js:205:13)
+    at set all (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/node_modules/configstore/index.js:61:20)
+    at Configstore.set (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/node_modules/configstore/index.js:91:12)
+    at process.<anonymous> (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/bin/cli.js:92:39)
+    at process.emit (node:events:531:35)
+    at process.exit (node:internal/process/per_thread:240:15)
+    at Timeout._onTimeout (/Users/akshat/.nvm/versions/node/v22.23.4/lib/node_modules/firebase-tools/lib/errorOut.js:20:17)
+    at listOnTimeout (node:internal/timers:585:17)
+    at process.processTimers (node:internal/timers:521:7)
+[error] 
+[error] Error: An unexpected error has occurred.

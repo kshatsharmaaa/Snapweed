@@ -1,0 +1,1057 @@
+"use client";
+
+import { useEffect, useState, useRef, use, useCallback } from "react";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { 
+  doc, 
+  getDoc, 
+  onSnapshot, 
+  updateDoc, 
+  collection, 
+  query, 
+  orderBy, 
+  addDoc, 
+  serverTimestamp 
+} from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import { useRoomWebSocket, WebSocketMessage } from "@/lib/useRoomWebSocket";
+import { applyPastelTheme, DEFAULT_THEME_ID } from "@/lib/pastel-themes";
+import { NotificationBell } from "@/app/components/NotificationBell";
+import { UserProfileViewModal } from "@/app/components/UserProfileViewModal";
+import { ChatEmojiPicker } from "@/app/components/ChatEmojiPicker";
+import { ChatGifPicker, SelectedGif } from "@/app/components/ChatGifPicker";
+import { prepareMediaForChat, PreparedMedia } from "@/lib/chat-media";
+
+interface Message {
+  id: string;
+  text: string;
+  senderId: string;
+  senderName: string;
+  senderUsername?: string;
+  senderPhoto?: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  mediaName?: string;
+  createdAt: unknown;
+  wsId?: string;
+}
+
+function currentEpochMillis(): number {
+  return Date.now();
+}
+
+function generateClientMsgId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+}
+
+interface RoomData {
+  securityCode: string;
+  createdBy: string;
+  createdByName?: string;
+  status: string;
+  participants: string[];
+  roomPassword?: string;
+}
+
+function formatTime(createdAt: unknown) {
+  if (!createdAt) return "";
+  try {
+    let date: Date;
+    if (typeof createdAt === "number") {
+      date = new Date(createdAt);
+    } else if (
+      typeof createdAt === "object" &&
+      createdAt !== null &&
+      "toDate" in createdAt &&
+      typeof (createdAt as { toDate: () => Date }).toDate === "function"
+    ) {
+      date = (createdAt as { toDate: () => Date }).toDate();
+    } else if (
+      typeof createdAt === "object" &&
+      createdAt !== null &&
+      "seconds" in createdAt &&
+      typeof (createdAt as { seconds: number }).seconds === "number"
+    ) {
+      date = new Date((createdAt as { seconds: number }).seconds * 1000);
+    } else if (typeof createdAt === "string") {
+      date = new Date(createdAt);
+    } else {
+      return "";
+    }
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+export default function Room({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
+  const roomId = unwrappedParams.id;
+  
+  const [user, setUser] = useState<User | null>(null);
+  const [userName, setUserName] = useState("Friend");
+  const [userUsername, setUserUsername] = useState("user");
+  const [userPhoto, setUserPhoto] = useState("");
+  const [room, setRoom] = useState<RoomData | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  // Room Password Gate
+  const [isPasswordUnlocked, setIsPasswordUnlocked] = useState(false);
+  const [roomPasswordInput, setRoomPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  // Profile viewing, online members menu, media upload, and image zoom
+  const [viewingUser, setViewingUser] = useState<{
+    uid: string;
+    name?: string;
+    username?: string;
+    photo?: string;
+  } | null>(null);
+  const [showOnlineList, setShowOnlineList] = useState(false);
+  const [pendingMedia, setPendingMedia] = useState<PreparedMedia | null>(null);
+  const [preparingMedia, setPreparingMedia] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; name?: string } | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+  }, []);
+
+  // 1. Authenticate user and fetch profile
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.name) setUserName(data.name);
+          if (data.username) setUserUsername(data.username);
+          if (data.photoURL) setUserPhoto(data.photoURL);
+          if (data.themeColor) {
+            applyPastelTheme(data.themeColor);
+          } else {
+            applyPastelTheme(DEFAULT_THEME_ID);
+          }
+        } else {
+          setUserName(currentUser.email?.split("@")[0] || "Friend");
+          applyPastelTheme(DEFAULT_THEME_ID);
+        }
+      } else {
+        router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  // 2. Subscribe to Room document
+  useEffect(() => {
+    if (!user || !roomId) return;
+
+    const roomRef = doc(db, "rooms", roomId);
+    const unsubscribe = onSnapshot(roomRef, (docSnap) => {
+      if (!docSnap.exists()) {
+        setError("This room does not exist.");
+        setLoading(false);
+        return;
+      }
+
+      const data = docSnap.data() as RoomData;
+      
+      if (data.status === "terminated") {
+        setError("This chat room has ended.");
+        setTimeout(() => router.push("/dashboard"), 2500);
+        return;
+      }
+
+      if (!data.participants?.includes(user.uid)) {
+        setError("You are not a participant in this room.");
+        setTimeout(() => router.push("/dashboard"), 2500);
+        return;
+      }
+
+      // Creator bypasses password check
+      if (data.createdBy === user.uid || !data.roomPassword) {
+        setIsPasswordUnlocked(true);
+      }
+
+      setRoom(data);
+      setLoading(false);
+    }, (err) => {
+      console.error(err);
+      setError("Failed to load room details.");
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [roomId, user, router]);
+
+  // Handle incoming WebSocket messages with deduplication
+  const handleWebSocketMessage = useCallback((wsMsg: WebSocketMessage) => {
+    setMessages((prev) => {
+      const nowMs = currentEpochMillis();
+      const exists = prev.some(
+        (m) =>
+          m.id === wsMsg.id ||
+          m.wsId === wsMsg.id ||
+          (m.senderId === wsMsg.senderId &&
+            m.text === wsMsg.text &&
+            (m.mediaName || "") === (wsMsg.mediaName || "") &&
+            Math.abs((typeof m.createdAt === "number" ? m.createdAt : nowMs) - wsMsg.createdAt) < 3000)
+      );
+
+      if (exists) return prev;
+
+      const newMsg: Message = {
+        id: wsMsg.id,
+        wsId: wsMsg.id,
+        text: wsMsg.text,
+        senderId: wsMsg.senderId,
+        senderName: wsMsg.senderName,
+        senderUsername: wsMsg.senderEmoji,
+        senderPhoto: wsMsg.senderPhoto,
+        mediaUrl: wsMsg.mediaUrl,
+        mediaType: wsMsg.mediaType,
+        mediaName: wsMsg.mediaName,
+        createdAt: wsMsg.createdAt,
+      };
+
+      return [...prev, newMsg];
+    });
+
+    setTimeout(() => scrollToBottom(true), 50);
+  }, [scrollToBottom]);
+
+  // Handle room terminated over WebSocket
+  const handleRoomTerminated = useCallback(() => {
+    setError("This chat room has been closed.");
+    setTimeout(() => router.push("/dashboard"), 2000);
+  }, [router]);
+
+  // WebSocket Hook for real-time messaging, presence, and typing status
+  const {
+    connectionStatus,
+    onlineUsers,
+    typingUsers,
+    sendMessage: sendWsMessage,
+    sendTyping,
+    terminateRoom: sendWsTerminate,
+    reconnect
+  } = useRoomWebSocket({
+    roomId,
+    userId: user?.uid,
+    userName,
+    onMessageReceived: handleWebSocketMessage,
+    onRoomTerminated: handleRoomTerminated,
+  });
+
+  // 3. Subscribe to Firestore Messages collection
+  useEffect(() => {
+    if (!roomId) return;
+
+    const messagesRef = collection(db, "rooms", roomId, "messages");
+    const q = query(messagesRef, orderBy("createdAt", "asc"));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const dbMsgs = snapshot.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          wsId: data.wsId,
+          text: data.text || "",
+          senderId: data.senderId,
+          senderName: data.senderName,
+          senderUsername: data.senderUsername,
+          senderPhoto: data.senderPhoto,
+          mediaUrl: data.mediaUrl || "",
+          mediaType: data.mediaType || "",
+          mediaName: data.mediaName || "",
+          createdAt: data.createdAt
+        };
+      }) as Message[];
+      
+      setMessages((prev) => {
+        const dbIds = new Set(dbMsgs.map(m => m.id));
+        const dbWsIds = new Set(dbMsgs.filter(m => m.wsId).map(m => m.wsId));
+        const unpersistedLocal = prev.filter(m => !dbIds.has(m.id) && (!m.wsId || !dbWsIds.has(m.wsId)));
+        return [...dbMsgs, ...unpersistedLocal];
+      });
+
+      setTimeout(() => scrollToBottom(false), 80);
+    });
+
+    return () => unsubscribe();
+  }, [roomId, scrollToBottom]);
+
+  const handleUnlockRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!room?.roomPassword) {
+      setIsPasswordUnlocked(true);
+      return;
+    }
+    if (roomPasswordInput === room.roomPassword) {
+      setIsPasswordUnlocked(true);
+      setPasswordError("");
+    } else {
+      setPasswordError("Incorrect room password.");
+    }
+  };
+
+  const handleMediaFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setMediaError("");
+    setPreparingMedia(true);
+    try {
+      const prepared = await prepareMediaForChat(file);
+      setPendingMedia(prepared);
+    } catch (err: unknown) {
+      const errObj = err as { message?: string };
+      setMediaError(errObj.message || "Could not prepare media file.");
+    } finally {
+      setPreparingMedia(false);
+    }
+  };
+
+  const handleInsertEmoji = (emoji: string) => {
+    const input = messageInputRef.current;
+    if (input && typeof input.selectionStart === "number" && typeof input.selectionEnd === "number") {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const nextValue = newMessage.slice(0, start) + emoji + newMessage.slice(end);
+      setNewMessage(nextValue);
+      sendTyping(nextValue.length > 0);
+      setTimeout(() => {
+        input.focus();
+        const cursorPos = start + emoji.length;
+        input.setSelectionRange(cursorPos, cursorPos);
+      }, 0);
+    } else {
+      const nextValue = newMessage + emoji;
+      setNewMessage(nextValue);
+      sendTyping(nextValue.length > 0);
+    }
+  };
+
+  const dispatchMessage = async (text: string, mediaToSend?: PreparedMedia) => {
+    if ((!text && !mediaToSend) || !user) return;
+
+    const clientMsgId = generateClientMsgId();
+    const nowMs = currentEpochMillis();
+
+    // 1. Instantly broadcast via WebSocket
+    sendWsMessage(
+      text,
+      clientMsgId,
+      false,
+      `@${userUsername}`,
+      mediaToSend,
+      userPhoto
+    );
+
+    // Optimistically show immediately
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: clientMsgId,
+        wsId: clientMsgId,
+        text,
+        senderId: user.uid,
+        senderName: userName,
+        senderUsername: `@${userUsername}`,
+        senderPhoto: userPhoto,
+        mediaUrl: mediaToSend?.url || "",
+        mediaType: mediaToSend?.type || "",
+        mediaName: mediaToSend?.name || "",
+        createdAt: nowMs
+      }
+    ]);
+    setTimeout(() => scrollToBottom(true), 50);
+
+    // 2. Persist to Firestore database
+    try {
+      await addDoc(collection(db, "rooms", roomId, "messages"), {
+        text,
+        senderId: user.uid,
+        senderName: userName,
+        senderUsername: `@${userUsername}`,
+        senderPhoto: userPhoto || "",
+        mediaUrl: mediaToSend?.url || "",
+        mediaType: mediaToSend?.type || "",
+        mediaName: mediaToSend?.name || "",
+        createdAt: serverTimestamp(),
+        wsId: clientMsgId
+      });
+
+      const summaryPreview = text
+        ? text.slice(0, 120)
+        : mediaToSend
+        ? mediaToSend.type === "image/gif"
+          ? "Sent a GIF"
+          : `Sent ${mediaToSend.type.startsWith("image/") ? "a photo" : mediaToSend.type.startsWith("video/") ? "a video" : "a file"}`
+        : "Sent a message";
+
+      await updateDoc(doc(db, "rooms", roomId), {
+        lastMessageText: summaryPreview,
+        lastMessageSender: userName,
+        lastMessageSenderUsername: userUsername,
+        lastMessageSenderId: user.uid,
+        lastMessageAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Error saving message:", err);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if ((!newMessage.trim() && !pendingMedia) || !user) return;
+
+    const text = newMessage.trim();
+    const mediaToSend = pendingMedia || undefined;
+    setNewMessage("");
+    setPendingMedia(null);
+    setMediaError("");
+    sendTyping(false);
+
+    await dispatchMessage(text, mediaToSend);
+  };
+
+  const handleSendGif = async (gif: SelectedGif) => {
+    if (!user) return;
+    await dispatchMessage("", {
+      url: gif.url,
+      type: "image/gif",
+      name: `${gif.title || "reaction"}.gif`,
+    });
+  };
+
+  const handleCopyCode = () => {
+    if (!room?.securityCode) return;
+    navigator.clipboard.writeText(room.securityCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleLeaveOrEndRoom = async () => {
+    if (!user || !room) return;
+    const isOwner = room.createdBy === user.uid;
+
+    if (isOwner) {
+      if (confirm("End this room for everyone?")) {
+        try {
+          sendWsTerminate();
+          await updateDoc(doc(db, "rooms", roomId), {
+            status: "terminated"
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center transition-colors"
+        style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-subtext)", colorScheme: "light" }}
+      >
+        <div className="flex flex-col items-center gap-2">
+          <div 
+            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: "var(--pastel-primary)", borderTopColor: "transparent" }}
+          />
+          <span className="text-xs font-bold">entering chat room...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 transition-colors"
+        style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)", colorScheme: "light" }}
+      >
+        <div 
+          className="bg-white p-7 rounded-3xl border shadow-sm text-center max-w-sm w-full"
+          style={{ borderColor: "var(--pastel-border)" }}
+        >
+          <h2 className="text-lg font-black mb-1" style={{ color: "var(--pastel-text)" }}>Room Unavailable</h2>
+          <p className="text-xs mb-5" style={{ color: "var(--pastel-subtext)" }}>{error}</p>
+          <button 
+            onClick={() => router.push("/dashboard")}
+            className="w-full py-2.5 text-white font-bold rounded-2xl text-xs transition-all shadow-xs cursor-pointer"
+            style={{ backgroundColor: "var(--pastel-primary)" }}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !room) return null;
+
+  // Password Unlock Gate
+  if (room.roomPassword && !isPasswordUnlocked) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 transition-colors"
+        style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)", colorScheme: "light" }}
+      >
+        <div 
+          className="max-w-sm w-full bg-white rounded-3xl p-7 border shadow-sm text-center"
+          style={{ borderColor: "var(--pastel-border)" }}
+        >
+          <div 
+            className="w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center text-xs font-black uppercase tracking-wider"
+            style={{ backgroundColor: "var(--pastel-tint)", color: "var(--pastel-primary)" }}
+          >
+            Pass
+          </div>
+          <h2 className="text-lg font-black" style={{ color: "var(--pastel-text)" }}>Protected Room</h2>
+          <p className="text-xs mb-4" style={{ color: "var(--pastel-subtext)" }}>
+            Enter the room password to join this chat.
+          </p>
+
+          <form onSubmit={handleUnlockRoom} className="space-y-3">
+            <input
+              type="password"
+              value={roomPasswordInput}
+              onChange={(e) => setRoomPasswordInput(e.target.value)}
+              placeholder="Enter password..."
+              className="w-full px-3.5 py-2.5 rounded-2xl border text-center text-sm font-bold focus:outline-none bg-white"
+              style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-text)", colorScheme: "light" }}
+              required
+            />
+            {passwordError && (
+              <p className="text-xs font-bold text-[#8a223a]">{passwordError}</p>
+            )}
+            <button
+              type="submit"
+              className="w-full py-2.5 text-white font-bold rounded-2xl text-xs shadow-xs cursor-pointer hover:opacity-95"
+              style={{ backgroundColor: "var(--pastel-primary)" }}
+            >
+              Enter Room
+            </button>
+          </form>
+
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="mt-3 text-xs hover:underline font-semibold cursor-pointer"
+            style={{ color: "var(--pastel-subtext)" }}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isOwner = room.createdBy === user.uid;
+  const otherTypingUsers = typingUsers.filter((u) => u.userId !== user.uid);
+  const typingText =
+    otherTypingUsers.length === 1
+      ? `${otherTypingUsers[0].userName} is typing...`
+      : otherTypingUsers.length > 1
+      ? "Several people are typing..."
+      : "";
+
+  return (
+    <div className="h-screen flex flex-col bg-[var(--pastel-bg)] text-[var(--pastel-text)] font-sans overflow-hidden" style={{ colorScheme: "light" }}>
+        
+      {/* Full-width Pastel Header with max-w-4xl inner alignment */}
+      <header className="bg-white/90 backdrop-blur-md border-b border-[var(--pastel-border)] px-4 sm:px-6 py-3 z-20 shrink-0">
+        <div className="max-w-4xl mx-auto w-full flex items-center justify-between">
+          
+          {/* Left: Back & Room Info */}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => router.push("/dashboard")}
+              className="px-3 py-1.5 rounded-xl bg-[var(--pastel-tint)] hover:opacity-80 text-[var(--pastel-text)] text-xs font-bold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+              title="Back to Dashboard"
+            >
+              <span>←</span>
+              <span>Dashboard</span>
+            </button>
+
+            <div className="relative flex items-center gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm sm:text-base font-black text-[var(--pastel-text)] leading-tight">
+                    Chat Room
+                  </h1>
+                  <button
+                    type="button"
+                    onClick={() => connectionStatus !== "connected" && reconnect()}
+                    title={connectionStatus !== "connected" ? "Click to reconnect" : "Connected"}
+                    className={`w-2 h-2 rounded-full cursor-pointer ${connectionStatus === "connected" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`}
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-[var(--pastel-subtext)] font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setShowOnlineList((prev) => !prev)}
+                    className="hover:underline cursor-pointer font-semibold"
+                    title="View online participants"
+                  >
+                    {onlineUsers.length > 0 ? `${onlineUsers.length} online` : "1 in room"}
+                  </button>
+                  <span>&bull;</span>
+                  <span className="text-[10px] capitalize">{connectionStatus === "connected" ? "Live" : "Connecting..."}</span>
+                </div>
+              </div>
+
+              {/* Online Members Popover */}
+              {showOnlineList && (
+                <div
+                  className="absolute left-0 top-full mt-2 w-56 bg-white rounded-2xl border shadow-lg z-40 p-2 space-y-1"
+                  style={{ borderColor: "var(--pastel-border)" }}
+                >
+                  <div className="flex items-center justify-between px-2 py-1 border-b" style={{ borderColor: "var(--pastel-border)" }}>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[var(--pastel-subtext)]">
+                      In This Room
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowOnlineList(false)}
+                      className="text-[10px] font-bold text-[var(--pastel-primary)] cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  {onlineUsers.length === 0 ? (
+                    <p className="text-xs px-2 py-1.5 text-[var(--pastel-subtext)]">{userName} (You)</p>
+                  ) : (
+                    onlineUsers.map((ou) => (
+                      <button
+                        key={ou.userId}
+                        type="button"
+                        onClick={() => {
+                          setShowOnlineList(false);
+                          setViewingUser({ uid: ou.userId, name: ou.userName });
+                        }}
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold hover:bg-[var(--pastel-tint)] transition-colors flex items-center justify-between cursor-pointer text-[var(--pastel-text)]"
+                      >
+                        <span className="truncate">{ou.userName}</span>
+                        <span className="text-[10px] text-[var(--pastel-primary)]">
+                          {ou.userId === user.uid ? "You" : "Profile"}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Notifications, Room Code & Leave Room */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <NotificationBell
+              currentUid={user.uid}
+              onNavigateTab={(tab) => {
+                router.push(`/dashboard?tab=${tab}`);
+              }}
+              onNavigateRoom={(targetRoomId) => {
+                if (targetRoomId !== roomId) {
+                  router.push(`/room/${targetRoomId}`);
+                }
+              }}
+            />
+
+            {/* Room Code Badge with 1-click Copy */}
+            <button
+              onClick={handleCopyCode}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--pastel-tint)] border border-[var(--pastel-border)] hover:bg-white text-xs font-bold text-[var(--pastel-text)] transition-all shadow-2xs cursor-pointer"
+              title="Click to copy room code"
+            >
+              <span className="text-[10px] text-[var(--pastel-subtext)] uppercase">Code:</span>
+              <span className="font-mono text-sm tracking-widest">{room.securityCode}</span>
+              <span className="text-[11px] font-bold" style={{ color: "var(--pastel-primary)" }}>{copiedCode ? "Copied" : "Copy"}</span>
+            </button>
+
+            {/* Leave / End Room */}
+            <button
+              onClick={handleLeaveOrEndRoom}
+              className="px-3 py-1.5 bg-white hover:opacity-90 border rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              style={{ 
+                borderColor: "var(--pastel-border)", 
+                color: "var(--pastel-primary)" 
+              }}
+            >
+              {isOwner ? "End Room" : "Leave"}
+            </button>
+
+          </div>
+        </div>
+      </header>
+
+      {/* Main Messages Feed (Unboxed, centered to max-w-4xl) */}
+      <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+        <div className="max-w-4xl mx-auto w-full min-h-full space-y-3.5 flex flex-col">
+          {messages.length === 0 ? (
+            <div className="m-auto flex flex-col items-center justify-center p-8 bg-white rounded-3xl border border-[var(--pastel-border)] shadow-xs max-w-sm text-center space-y-2">
+              <h3 className="text-base font-bold text-[var(--pastel-text)]">
+                Welcome to the room
+              </h3>
+              <p className="text-xs text-[var(--pastel-subtext)] leading-relaxed">
+                Share code <strong className="font-mono bg-[var(--pastel-tint)] px-1.5 py-0.5 rounded text-[var(--pastel-text)]">{room.securityCode}</strong> with someone to chat in real-time.
+              </p>
+              <button
+                onClick={handleCopyCode}
+                className="mt-2 px-3.5 py-1.5 bg-[var(--pastel-primary)] text-white text-xs font-bold rounded-xl shadow-2xs hover:opacity-90 cursor-pointer"
+              >
+                {copiedCode ? "Copied to clipboard" : "Copy Room Code"}
+              </button>
+            </div>
+          ) : (
+            messages.map((msg, index) => {
+              const isMe = msg.senderId === user.uid;
+              const isConsecutive = index > 0 && messages[index - 1].senderId === msg.senderId;
+              const timeStr = formatTime(msg.createdAt);
+
+              return (
+                <div key={msg.id || index} className={`flex w-full ${isMe ? "justify-end" : "justify-start"} ${isConsecutive ? "-mt-1.5" : ""}`}>
+                  <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[70%] ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                    
+                    {/* Clickable Sender Photo/Avatar */}
+                    {!isMe && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setViewingUser({
+                            uid: msg.senderId,
+                            name: msg.senderName,
+                            username: msg.senderUsername,
+                            photo: msg.senderPhoto,
+                          })
+                        }
+                        title={`View ${msg.senderName}'s profile`}
+                        className={`w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-tint)] border border-[var(--pastel-border)] flex items-center justify-center text-xs shrink-0 shadow-2xs font-bold text-[var(--pastel-primary)] cursor-pointer hover:opacity-85 ${isConsecutive ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+                      >
+                        {msg.senderPhoto ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={msg.senderPhoto} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{msg.senderName?.charAt(0)?.toUpperCase() || "U"}</span>
+                        )}
+                      </button>
+                    )}
+
+                    <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                      {!isMe && !isConsecutive && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setViewingUser({
+                              uid: msg.senderId,
+                              name: msg.senderName,
+                              username: msg.senderUsername,
+                              photo: msg.senderPhoto,
+                            })
+                          }
+                          title={`View ${msg.senderName}'s profile`}
+                          className="text-[11px] font-bold text-[var(--pastel-subtext)] hover:text-[var(--pastel-primary)] hover:underline mb-0.5 ml-1 cursor-pointer text-left"
+                        >
+                          {msg.senderName}
+                        </button>
+                      )}
+
+                      {/* Chat Bubble */}
+                      <div 
+                        className={`px-4 py-2 shadow-2xs text-sm leading-relaxed rounded-2xl space-y-1.5 ${
+                          isMe 
+                            ? "bg-[var(--pastel-primary)] text-white rounded-br-xs" 
+                            : "bg-white border border-[var(--pastel-border)] text-[var(--pastel-text)] rounded-bl-xs"
+                        }`}
+                      >
+                        {/* Media Attachment */}
+                        {msg.mediaUrl && (
+                          <div className="pt-0.5">
+                            {msg.mediaType?.startsWith("image/") ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setLightboxImage({
+                                    url: msg.mediaUrl!,
+                                    name: msg.mediaName,
+                                  })
+                                }
+                                className="block rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={msg.mediaUrl}
+                                  alt={msg.mediaName || "Shared image"}
+                                  className="max-h-64 max-w-full rounded-xl object-cover"
+                                />
+                              </button>
+                            ) : msg.mediaType?.startsWith("video/") ? (
+                              <video
+                                controls
+                                playsInline
+                                src={msg.mediaUrl}
+                                className="max-h-64 max-w-full rounded-xl"
+                              />
+                            ) : msg.mediaType?.startsWith("audio/") ? (
+                              <audio
+                                controls
+                                src={msg.mediaUrl}
+                                className="w-56 sm:w-64 max-w-full"
+                              />
+                            ) : (
+                              <a
+                                href={msg.mediaUrl}
+                                download={msg.mediaName || "attachment"}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition-opacity hover:opacity-90 ${
+                                  isMe
+                                    ? "bg-white/15 border-white/30 text-white"
+                                    : "bg-[var(--pastel-tint)] border-[var(--pastel-border)] text-[var(--pastel-text)]"
+                                }`}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="shrink-0"
+                                >
+                                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                                </svg>
+                                <span className="truncate max-w-[180px]">
+                                  {msg.mediaName || "Download file"}
+                                </span>
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {msg.text && <div className="break-words">{msg.text}</div>}
+
+                        {timeStr && (
+                          <div className={`text-[10px] mt-0.5 text-right select-none ${isMe ? "text-white/80" : "text-[var(--pastel-subtext)]"}`}>
+                            {timeStr}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          {/* Real-time Typing indicator banner */}
+          {otherTypingUsers.length > 0 && (
+            <div className="flex items-center gap-2 text-xs text-[var(--pastel-subtext)] bg-white/80 px-3 py-1.5 rounded-full w-fit border border-[var(--pastel-border)] shadow-2xs">
+              <span className="flex gap-1 items-center">
+                <span className="w-1.5 h-1.5 bg-[var(--pastel-primary)] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-1.5 h-1.5 bg-[var(--pastel-primary)] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-1.5 h-1.5 bg-[var(--pastel-primary)] rounded-full animate-bounce"></span>
+              </span>
+              <span>{typingText}</span>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} className="h-1" />
+        </div>
+      </main>
+
+      {/* Input Bar */}
+      <footer className="p-3 sm:p-4 pb-5 bg-white border-t border-[var(--pastel-border)] shrink-0">
+        <div className="max-w-4xl mx-auto w-full space-y-2">
+          {/* Media Error Notice */}
+          {mediaError && (
+            <div className="p-2 text-xs font-bold text-[#8a223a] bg-[#feebee] rounded-xl border border-[#f8cad3] flex items-center justify-between">
+              <span>{mediaError}</span>
+              <button
+                type="button"
+                onClick={() => setMediaError("")}
+                className="text-[11px] underline cursor-pointer ml-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Pending Media Attachment Preview */}
+          {pendingMedia && (
+            <div className="p-2 bg-[var(--pastel-tint)] rounded-2xl border border-[var(--pastel-border)] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {pendingMedia.type.startsWith("image/") ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={pendingMedia.url}
+                    alt={pendingMedia.name}
+                    className="w-10 h-10 rounded-xl object-cover border border-[var(--pastel-border)] shrink-0"
+                  />
+                ) : (
+                  <span className="px-2.5 py-1 rounded-xl bg-white border border-[var(--pastel-border)] text-[10px] font-bold text-[var(--pastel-primary)] shrink-0">
+                    {pendingMedia.type.startsWith("video/")
+                      ? "Video"
+                      : pendingMedia.type.startsWith("audio/")
+                      ? "Audio"
+                      : "File"}
+                  </span>
+                )}
+                <span className="text-xs font-bold text-[var(--pastel-text)] truncate">
+                  {pendingMedia.name}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPendingMedia(null)}
+                className="px-2.5 py-1 rounded-xl bg-white border border-[var(--pastel-border)] text-[11px] font-bold text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)] cursor-pointer shrink-0"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+
+          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx"
+              onChange={handleMediaFileChange}
+              className="hidden"
+            />
+
+            {/* Media Upload Button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={preparingMedia}
+              className="p-2.5 rounded-full border transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0 disabled:opacity-40"
+              style={{
+                backgroundColor: "var(--pastel-tint)",
+                borderColor: "var(--pastel-border)",
+                color: "var(--pastel-text)",
+              }}
+              title="Attach photo, video, audio, or file"
+              aria-label="Attach media file"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+            </button>
+
+            {/* Emoji Keyboard */}
+            <ChatEmojiPicker onSelectEmoji={handleInsertEmoji} />
+
+            {/* GIF Picker */}
+            <ChatGifPicker onSelectGif={handleSendGif} />
+
+            <input
+              ref={messageInputRef}
+              type="text"
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                sendTyping(e.target.value.length > 0);
+              }}
+              placeholder="Write a message..."
+              className="flex-1 py-2.5 px-4 rounded-full border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+            />
+
+            <button
+              type="submit"
+              disabled={(!newMessage.trim() && !pendingMedia) || preparingMedia}
+              className="px-5 py-2.5 bg-[var(--pastel-primary)] hover:opacity-90 text-white rounded-full text-xs font-bold transition-all shadow-xs disabled:opacity-40 cursor-pointer shrink-0"
+            >
+              {preparingMedia ? "..." : "Send"}
+            </button>
+          </form>
+        </div>
+      </footer>
+
+      {/* Member Profile Modal */}
+      <UserProfileViewModal
+        uid={viewingUser?.uid || null}
+        fallbackName={viewingUser?.name}
+        fallbackUsername={viewingUser?.username}
+        fallbackPhoto={viewingUser?.photo}
+        onClose={() => setViewingUser(null)}
+      />
+
+      {/* Image Lightbox Preview */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/30 backdrop-blur-xs"
+          style={{ colorScheme: "light" }}
+          onClick={() => setLightboxImage(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-4 border max-w-2xl w-full shadow-xl space-y-3"
+            style={{ borderColor: "var(--pastel-border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-[var(--pastel-text)] truncate">
+                {lightboxImage.name || "Shared photo"}
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={lightboxImage.url}
+                  download={lightboxImage.name || "photo.jpg"}
+                  className="px-3 py-1 rounded-xl text-[11px] font-bold bg-[var(--pastel-tint)] text-[var(--pastel-text)] border border-[var(--pastel-border)] hover:opacity-85"
+                >
+                  Download
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setLightboxImage(null)}
+                  className="px-3 py-1 rounded-xl text-[11px] font-bold bg-[var(--pastel-primary)] text-white cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxImage.url}
+              alt={lightboxImage.name || "Full preview"}
+              className="max-h-[75vh] w-auto mx-auto rounded-2xl object-contain"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

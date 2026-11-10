@@ -1,26 +1,138 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-pastel-primary: var(--pastel-primary);
+  --color-pastel-bg: var(--pastel-bg);
+  --color-pastel-card: var(--pastel-card);
+  --color-pastel-tint: var(--pastel-tint);
+  --color-pastel-border: var(--pastel-border);
+  --color-pastel-text: var(--pastel-text);
+  --color-pastel-subtext: var(--pastel-subtext);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+:root,
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color-scheme: light !important;
+  --pastel-primary: #d87080;
+  --pastel-bg: #fff6f8;
+  --pastel-card: #ffffff;
+  --pastel-tint: #fde8ec;
+  --pastel-border: #f8cad3;
+  --pastel-text: #4f202b;
+  --pastel-subtext: #9e5c6b;
+}
+
+/* 1. Blush Rose */
+[data-theme="blush"],
+html[data-theme="blush"] {
+  --pastel-primary: #d87080;
+  --pastel-bg: #fff6f8;
+  --pastel-card: #ffffff;
+  --pastel-tint: #fde8ec;
+  --pastel-border: #f8cad3;
+  --pastel-text: #4f202b;
+  --pastel-subtext: #9e5c6b;
+}
+
+/* 2. Matcha Mint */
+[data-theme="matcha"],
+html[data-theme="matcha"] {
+  --pastel-primary: #4d9363;
+  --pastel-bg: #f2f9f4;
+  --pastel-card: #ffffff;
+  --pastel-tint: #e1f5e7;
+  --pastel-border: #bce6c7;
+  --pastel-text: #194023;
+  --pastel-subtext: #4a7554;
+}
+
+/* 3. Soft Lavender */
+[data-theme="lavender"],
+html[data-theme="lavender"] {
+  --pastel-primary: #765eb5;
+  --pastel-bg: #f7f4fd;
+  --pastel-card: #ffffff;
+  --pastel-tint: #ede6f9;
+  --pastel-border: #d4c7ee;
+  --pastel-text: #322355;
+  --pastel-subtext: #66528e;
+}
+
+/* 4. Sweet Peach */
+[data-theme="peach"],
+html[data-theme="peach"] {
+  --pastel-primary: #dc723e;
+  --pastel-bg: #fff7f2;
+  --pastel-card: #ffffff;
+  --pastel-tint: #ffebde;
+  --pastel-border: #fad0bc;
+  --pastel-text: #4e210d;
+  --pastel-subtext: #8b5236;
+}
+
+/* 5. Baby Blue */
+[data-theme="sky"],
+html[data-theme="sky"] {
+  --pastel-primary: #4385ce;
+  --pastel-bg: #f1f7fd;
+  --pastel-card: #ffffff;
+  --pastel-tint: #e0eefc;
+  --pastel-border: #bcdbf6;
+  --pastel-text: #18385d;
+  --pastel-subtext: #4f7095;
+}
+
+/* 6. Buttercream */
+[data-theme="butter"],
+html[data-theme="butter"] {
+  --pastel-primary: #b8971f;
+  --pastel-bg: #fffdf2;
+  --pastel-card: #ffffff;
+  --pastel-tint: #fff6cf;
+  --pastel-border: #fae696;
+  --pastel-text: #47390a;
+  --pastel-subtext: #7a672f;
+}
+
+html, body {
+  color-scheme: light !important;
+  background-color: var(--pastel-bg) !important;
+  color: var(--pastel-text) !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Force light appearance on all form inputs and prevent OS dark mode inversion */
+*, *::before, *::after {
+  color-scheme: light !important;
+}
+
+input, textarea, select, button {
+  color-scheme: light !important;
+}
+
+/* Soft cozy scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pastel-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pastel-primary);
+}
+
+@keyframes softBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-soft-bounce {
+  animation: softBounce 2s infinite ease-in-out;
 }
