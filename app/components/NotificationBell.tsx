@@ -235,8 +235,8 @@ function FloatingToastCard({
 
   return (
     <div
-      className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-3.5 animate-toast-in flex items-start gap-2.5 cursor-pointer hover:opacity-95 transition-opacity"
-      style={{ borderColor: "var(--pastel-border)" }}
+      className="pointer-events-auto backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.16)] p-3.5 animate-toast-in flex items-start gap-2.5 cursor-pointer hover:opacity-95 transition-opacity"
+      style={{ backgroundColor: "var(--pastel-nav)", borderColor: "var(--pastel-border)" }}
       onClick={() => onSelect(toast)}
       role="status"
     >
@@ -271,7 +271,7 @@ function FloatingToastCard({
           e.stopPropagation();
           onDismiss(toast.id);
         }}
-        className="p-1 rounded-full hover:bg-stone-100 shrink-0 cursor-pointer"
+        className="p-1 rounded-full hover:bg-[var(--pastel-tint)] shrink-0 cursor-pointer"
         style={{ color: "var(--pastel-subtext)" }}
         aria-label="Dismiss notification"
       >
@@ -697,7 +697,7 @@ export function NotificationBell({
   };
 
   return (
-    <div className="relative" ref={containerRef} style={{ colorScheme: "light" }}>
+    <div className="relative" ref={containerRef}>
       {/* Bell Button */}
       <button
         type="button"
@@ -739,8 +739,8 @@ export function NotificationBell({
       {/* Dropdown Popover */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-3xl border shadow-xl z-50 overflow-hidden"
-          style={{ borderColor: "var(--pastel-border)", colorScheme: "light" }}
+          className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[var(--pastel-card)] rounded-3xl border shadow-xl z-50 overflow-hidden"
+          style={{ borderColor: "var(--pastel-border)" }}
         >
           {/* Header */}
           <div
@@ -769,7 +769,7 @@ export function NotificationBell({
                 <button
                   type="button"
                   onClick={handleRequestDesktopPermission}
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border hover:opacity-85 cursor-pointer"
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--pastel-card)] border hover:opacity-85 cursor-pointer"
                   style={{
                     borderColor: "var(--pastel-border)",
                     color: "var(--pastel-text)",
@@ -781,7 +781,7 @@ export function NotificationBell({
               )}
               {desktopPerm === "granted" && (
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border"
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--pastel-card)] border"
                   style={{
                     borderColor: "var(--pastel-border)",
                     color: "var(--pastel-primary)",
@@ -792,7 +792,7 @@ export function NotificationBell({
               )}
               {desktopPerm === "denied" && (
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border"
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--pastel-card)] border"
                   style={{
                     borderColor: "var(--pastel-border)",
                     color: "var(--pastel-subtext)",
@@ -817,7 +817,7 @@ export function NotificationBell({
 
           {desktopPerm === "denied" && (
             <div
-              className="px-4 py-2 border-b text-[11px] bg-white"
+              className="px-4 py-2 border-b text-[11px] bg-[var(--pastel-card)]"
               style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-subtext)" }}
             >
               Browser notifications are blocked. Allow notifications for this site in browser settings to receive outside-window popups.
@@ -826,7 +826,7 @@ export function NotificationBell({
 
           {/* Filter Tabs */}
           <div
-            className="px-3 py-2 border-b flex gap-1.5 bg-white"
+            className="px-3 py-2 border-b flex gap-1.5 bg-[var(--pastel-card)]"
             style={{ borderColor: "var(--pastel-border)" }}
           >
             {(["all", "posts", "likes"] as const).map((tabKey) => {
@@ -867,16 +867,16 @@ export function NotificationBell({
                     key={item.id}
                     type="button"
                     onClick={() => handleNotificationClick(item)}
-                    className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors flex items-start gap-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-3 hover:opacity-90 transition-opacity flex items-start gap-2.5 cursor-pointer"
                     style={{
-                      backgroundColor: isUnread ? "var(--pastel-tint)" : "#ffffff",
+                      backgroundColor: isUnread ? "var(--pastel-tint)" : "var(--pastel-card)",
                       borderColor: "var(--pastel-border)",
                     }}
                   >
                     <span
                       className="mt-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 border"
                       style={{
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "var(--pastel-card)",
                         borderColor: "var(--pastel-border)",
                         color: "var(--pastel-primary)",
                       }}
@@ -919,13 +919,12 @@ export function NotificationBell({
         createPortal(
           <div
             className="fixed top-16 right-4 sm:right-6 z-50 flex flex-col gap-2.5 w-80 sm:w-96 pointer-events-none"
-            style={{ colorScheme: "light" }}
             aria-live="polite"
           >
             {desktopPerm === "default" && !promptDismissed && (
               <div
-                className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-3.5 animate-toast-in"
-                style={{ borderColor: "var(--pastel-border)" }}
+                className="pointer-events-auto backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.16)] p-3.5 animate-toast-in"
+                style={{ backgroundColor: "var(--pastel-nav)", borderColor: "var(--pastel-border)" }}
                 role="region"
                 aria-label="Enable desktop alerts"
               >
@@ -941,7 +940,7 @@ export function NotificationBell({
                   <button
                     type="button"
                     onClick={handleDismissPrompt}
-                    className="p-1 rounded-full hover:bg-stone-100 shrink-0 cursor-pointer"
+                    className="p-1 rounded-full hover:bg-[var(--pastel-tint)] shrink-0 cursor-pointer"
                     style={{ color: "var(--pastel-subtext)" }}
                     aria-label="Dismiss alert prompt"
                   >
@@ -960,7 +959,7 @@ export function NotificationBell({
                   <button
                     type="button"
                     onClick={handleDismissPrompt}
-                    className="px-2.5 py-1 rounded-xl text-[11px] font-semibold cursor-pointer hover:bg-stone-100 transition-colors"
+                    className="px-2.5 py-1 rounded-xl text-[11px] font-semibold cursor-pointer hover:bg-[var(--pastel-tint)] transition-colors"
                     style={{ color: "var(--pastel-subtext)" }}
                   >
                     Not now

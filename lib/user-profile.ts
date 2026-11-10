@@ -10,6 +10,7 @@ export interface UserProfileData {
   photoURL?: string;
   favSong?: string;
   themeColor?: string;
+  darkMode?: boolean;
   createdAt?: unknown;
   updatedAt?: unknown;
 }

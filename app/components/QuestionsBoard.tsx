@@ -253,7 +253,7 @@ export function QuestionsBoard({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
+    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
       
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
@@ -285,7 +285,7 @@ export function QuestionsBoard({
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
             placeholder="e.g. What is your go-to comfort song when it's raining?"
-            className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-white text-sm text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+            className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
             required
           />
           <div className="flex justify-end gap-2">
@@ -360,7 +360,7 @@ export function QuestionsBoard({
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Write your answer..."
-                    className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-[var(--pastel-border)] bg-white text-[var(--pastel-text)] focus:outline-none"
+                    className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
                     autoFocus
                   />
                   <button

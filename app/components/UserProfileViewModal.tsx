@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getUserProfile, UserProfileData } from "@/lib/user-profile";
-import { PASTEL_THEMES, DEFAULT_THEME_ID } from "@/lib/pastel-themes";
+import { getPastelPalette, DEFAULT_THEME_ID } from "@/lib/pastel-themes";
+import { useStoredThemeMode } from "@/lib/usePastelTheme";
 import { TrackCover } from "./TrackCover";
 import { fetchTrackMetadata, isMusicUrl } from "@/lib/track-meta";
 
@@ -21,6 +22,7 @@ export function UserProfileViewModal({
   fallbackPhoto = "",
   onClose,
 }: UserProfileViewModalProps) {
+  const themeMode = useStoredThemeMode();
   const [loadedProfile, setLoadedProfile] = useState<{
     forUid: string;
     data: UserProfileData | null;
@@ -78,7 +80,7 @@ export function UserProfileViewModal({
   const displayPhoto = activeData?.photoURL || fallbackPhoto || "";
 
   const themeKey = activeData?.themeColor || DEFAULT_THEME_ID;
-  const themeObj = PASTEL_THEMES[themeKey] || PASTEL_THEMES[DEFAULT_THEME_ID];
+  const themeObj = getPastelPalette(themeKey, themeMode);
 
   const songMeta =
     resolvedSong && resolvedSong.forSong === favSong ? resolvedSong : null;
@@ -90,12 +92,11 @@ export function UserProfileViewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/15 backdrop-blur-xs"
-      style={{ colorScheme: "light" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
-        className="max-w-sm w-full bg-white rounded-3xl p-6 border shadow-xl"
+        className="max-w-sm w-full bg-[var(--pastel-card)] rounded-3xl p-6 border shadow-xl"
         style={{ borderColor: "var(--pastel-border)" }}
         onClick={(e) => e.stopPropagation()}
       >

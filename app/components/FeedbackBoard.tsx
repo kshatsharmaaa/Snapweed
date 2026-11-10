@@ -146,10 +146,7 @@ export function FeedbackBoard({
   };
 
   return (
-    <div
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors"
-      style={{ colorScheme: "light" }}
-    >
+    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
       {/* Header */}
       <div className="mb-5">
         <h3 className="text-lg font-black text-[var(--pastel-text)]">
@@ -176,7 +173,7 @@ export function FeedbackBoard({
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your display name"
               maxLength={80}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-white text-sm text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               required
             />
           </div>
@@ -196,7 +193,7 @@ export function FeedbackBoard({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share feedback, new features, or changes you want..."
             maxLength={2000}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-white text-sm text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
             required
           />
         </div>

@@ -257,7 +257,7 @@ export function BlogsBoard({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors" style={{ colorScheme: "light" }}>
+    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
       
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
@@ -290,7 +290,7 @@ export function BlogsBoard({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. A peaceful afternoon with tea"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-white text-sm text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               required
             />
           </div>
@@ -304,7 +304,7 @@ export function BlogsBoard({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Share your thoughts gently..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-white text-sm text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               required
             />
           </div>
@@ -363,7 +363,7 @@ export function BlogsBoard({
                     className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border shadow-2xs transition-all cursor-pointer ${
                       isLiked
                         ? "bg-[var(--pastel-primary)] text-white border-[var(--pastel-primary)] scale-102"
-                        : "bg-white text-[var(--pastel-primary)] border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)]"
+                        : "bg-[var(--pastel-card)] text-[var(--pastel-primary)] border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)]"
                     }`}
                   >
                     <span>{isLiked ? "Liked" : "Like"}</span>

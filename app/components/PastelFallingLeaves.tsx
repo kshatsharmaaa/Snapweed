@@ -1,7 +1,7 @@
 "use client";
 
 import { FallingLeaves, LeafShape } from "falling-leaves/react";
-import { useStoredPastelTheme } from "@/lib/usePastelTheme";
+import { useStoredPastelTheme, useStoredThemeMode } from "@/lib/usePastelTheme";
 import { DEFAULT_THEME_ID } from "@/lib/pastel-themes";
 
 const THEME_LEAF_COLORS: Record<string, string[]> = {
@@ -17,6 +17,7 @@ const LEAF_SHAPES: LeafShape[] = ["maple", "ginkgo", "birch", "oval"];
 
 export function PastelFallingLeaves() {
   const themeId = useStoredPastelTheme();
+  const themeMode = useStoredThemeMode();
   const colors = THEME_LEAF_COLORS[themeId] || THEME_LEAF_COLORS[DEFAULT_THEME_ID];
 
   return (
@@ -30,7 +31,7 @@ export function PastelFallingLeaves() {
       rotationSpeed={[-1.2, 1.2]}
       shapes={LEAF_SHAPES}
       colors={colors}
-      opacity={0.55}
+      opacity={themeMode === "dark" ? 0.36 : 0.55}
       zIndex={25}
       respectReducedMotion
     />

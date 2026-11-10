@@ -5,19 +5,22 @@ import Link from "next/link";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { updateUserProfile } from "@/lib/user-profile";
-import { 
-  PASTEL_THEMES, 
-  applyPastelTheme 
+import {
+  PASTEL_THEMES,
+  applyPastelTheme,
+  getPastelPalette,
 } from "@/lib/pastel-themes";
-import { useStoredPastelTheme } from "@/lib/usePastelTheme";
+import { useStoredPastelTheme, useStoredThemeMode } from "@/lib/usePastelTheme";
+import { ThemeModeToggle } from "./components/ThemeModeToggle";
 
 export default function Home() {
   const activeTheme = useStoredPastelTheme();
+  const activeMode = useStoredThemeMode();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    applyPastelTheme(activeTheme);
-  }, [activeTheme]);
+    applyPastelTheme(activeTheme, activeMode);
+  }, [activeTheme, activeMode]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -27,7 +30,7 @@ export default function Home() {
   }, []);
 
   const handleChooseTheme = async (themeId: string) => {
-    applyPastelTheme(themeId);
+    applyPastelTheme(themeId, activeMode);
 
     if (currentUser) {
       try {
@@ -41,7 +44,7 @@ export default function Home() {
   return (
     <div 
       className="min-h-screen flex flex-col justify-between transition-colors duration-200"
-      style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)", colorScheme: "light" }}
+      style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
     >
       {/* Navigation */}
       <nav className="w-full max-w-5xl mx-auto px-6 py-6 flex justify-between items-center">
@@ -50,6 +53,7 @@ export default function Home() {
         </div>
         
         <div className="flex items-center gap-2.5">
+          <ThemeModeToggle uid={currentUser?.uid} />
           {currentUser ? (
             <>
               <Link
@@ -126,7 +130,7 @@ export default function Home() {
           {!currentUser && (
             <Link
               href="/login"
-              className="w-full sm:w-auto px-6 py-3.5 bg-white border font-bold rounded-2xl transition-all text-sm hover:opacity-90"
+              className="w-full sm:w-auto px-6 py-3.5 bg-[var(--pastel-card)] border font-bold rounded-2xl transition-all text-sm hover:opacity-90"
               style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-text)" }}
             >
               I Have an Account →
@@ -154,6 +158,7 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {Object.values(PASTEL_THEMES).map((th) => {
               const isSelected = activeTheme === th.id;
+              const palette = getPastelPalette(th.id, activeMode);
               return (
                 <button
                   key={th.id}
@@ -165,24 +170,24 @@ export default function Home() {
                       : "opacity-85 hover:opacity-100 hover:scale-101"
                   }`}
                   style={{
-                    backgroundColor: th.tint,
-                    borderColor: isSelected ? th.primary : th.border,
-                    color: th.text,
-                    outlineColor: th.primary,
+                    backgroundColor: palette.tint,
+                    borderColor: isSelected ? palette.primary : palette.border,
+                    color: palette.text,
+                    outlineColor: palette.primary,
                   }}
                   title={`Switch to ${th.name}`}
                 >
                   <span className="flex items-center gap-2">
                     <span 
                       className="w-3 h-3 rounded-full shrink-0 border"
-                      style={{ backgroundColor: th.primary, borderColor: th.border }}
+                      style={{ backgroundColor: palette.primary, borderColor: palette.border }}
                     />
                     <span>{th.name}</span>
                   </span>
                   {isSelected ? (
                     <span 
                       className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white"
-                      style={{ backgroundColor: th.primary }}
+                      style={{ backgroundColor: palette.primary }}
                     >
                       Active
                     </span>

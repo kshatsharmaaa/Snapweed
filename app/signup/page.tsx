@@ -12,24 +12,26 @@ import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { claimUsername } from "@/lib/user-profile";
-import { PASTEL_THEMES, applyPastelTheme } from "@/lib/pastel-themes";
-import { useStoredPastelTheme } from "@/lib/usePastelTheme";
+import { PASTEL_THEMES, applyPastelTheme, getPastelPalette } from "@/lib/pastel-themes";
+import { useStoredPastelTheme, useStoredThemeMode } from "@/lib/usePastelTheme";
+import { ThemeModeToggle } from "@/app/components/ThemeModeToggle";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const selectedTheme = useStoredPastelTheme();
+  const activeMode = useStoredThemeMode();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    applyPastelTheme(selectedTheme);
-  }, [selectedTheme]);
+    applyPastelTheme(selectedTheme, activeMode);
+  }, [selectedTheme, activeMode]);
 
   const handleSelectTheme = (themeId: string) => {
-    applyPastelTheme(themeId);
+    applyPastelTheme(themeId, activeMode);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -90,6 +92,7 @@ export default function Signup() {
           photoURL: "",
           favSong: "",
           themeColor: selectedTheme,
+          darkMode: activeMode === "dark",
           createdAt: serverTimestamp(),
         }, { merge: true });
       } catch (firestoreErr) {
@@ -100,7 +103,7 @@ export default function Signup() {
       await claimUsername(cleanUsername, uid);
 
       // 5. Save theme to localStorage & apply
-      applyPastelTheme(selectedTheme);
+      applyPastelTheme(selectedTheme, activeMode);
 
       router.push("/dashboard");
     } catch (err: unknown) {
@@ -118,9 +121,12 @@ export default function Signup() {
       style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
     >
       <div 
-        className="max-w-md w-full bg-white rounded-3xl p-8 border shadow-sm transition-all"
+        className="relative max-w-md w-full bg-[var(--pastel-card)] rounded-3xl p-8 border shadow-sm transition-all"
         style={{ borderColor: "var(--pastel-border)" }}
       >
+        <div className="absolute top-5 right-5">
+          <ThemeModeToggle compact />
+        </div>
         
         {/* Cozy Logo & Header */}
         <div className="text-center mb-6">
@@ -139,7 +145,14 @@ export default function Signup() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 text-xs font-semibold text-[#8a223a] bg-[#feebee] rounded-2xl border border-[#f8cad3] text-center">
+          <div
+            className="mb-4 p-3 text-xs font-semibold rounded-2xl border text-center"
+            style={{
+              backgroundColor: "var(--pastel-error-bg)",
+              color: "var(--pastel-error-text)",
+              borderColor: "var(--pastel-error-border)",
+            }}
+          >
             {error}
           </div>
         )}
@@ -158,7 +171,7 @@ export default function Signup() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                 placeholder="cozy_nomad"
-                className="w-full pl-8 pr-4 py-3 rounded-2xl border bg-white focus:outline-none focus:ring-2 text-sm"
+                className="w-full pl-8 pr-4 py-3 rounded-2xl border bg-[var(--pastel-bg)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
                 style={{ 
                   borderColor: "var(--pastel-border)", 
                   color: "var(--pastel-text)"
@@ -181,7 +194,7 @@ export default function Signup() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Maya or Capybara"
-              className="w-full px-4 py-3 rounded-2xl border bg-white focus:outline-none focus:ring-2 text-sm"
+              className="w-full px-4 py-3 rounded-2xl border bg-[var(--pastel-bg)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
               style={{ 
                 borderColor: "var(--pastel-border)", 
                 color: "var(--pastel-text)"
@@ -199,7 +212,7 @@ export default function Signup() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 6 characters"
-              className="w-full px-4 py-3 rounded-2xl border bg-white focus:outline-none focus:ring-2 text-sm"
+              className="w-full px-4 py-3 rounded-2xl border bg-[var(--pastel-bg)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
               style={{ 
                 borderColor: "var(--pastel-border)", 
                 color: "var(--pastel-text)"
@@ -219,28 +232,31 @@ export default function Signup() {
               </span>
             </div>
             <div className="grid grid-cols-6 gap-2">
-              {Object.values(PASTEL_THEMES).map((th) => (
-                <button
-                  key={th.id}
-                  type="button"
-                  onClick={() => handleSelectTheme(th.id)}
-                  className={`h-11 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer border ${
-                    selectedTheme === th.id
-                      ? "ring-2 scale-105 shadow-xs"
-                      : "border-transparent opacity-80 hover:opacity-100 hover:scale-105"
-                  }`}
-                  style={{ 
-                    backgroundColor: th.tint,
-                    borderColor: selectedTheme === th.id ? th.primary : "transparent"
-                  }}
-                  title={th.name}
-                >
-                  <span 
-                    className="w-4 h-4 rounded-full border shadow-2xs"
-                    style={{ backgroundColor: th.primary, borderColor: th.border }}
-                  />
-                </button>
-              ))}
+              {Object.values(PASTEL_THEMES).map((th) => {
+                const palette = getPastelPalette(th.id, activeMode);
+                return (
+                  <button
+                    key={th.id}
+                    type="button"
+                    onClick={() => handleSelectTheme(th.id)}
+                    className={`h-11 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer border ${
+                      selectedTheme === th.id
+                        ? "ring-2 scale-105 shadow-xs"
+                        : "border-transparent opacity-80 hover:opacity-100 hover:scale-105"
+                    }`}
+                    style={{ 
+                      backgroundColor: palette.tint,
+                      borderColor: selectedTheme === th.id ? palette.primary : "transparent"
+                    }}
+                    title={th.name}
+                  >
+                    <span 
+                      className="w-4 h-4 rounded-full border shadow-2xs"
+                      style={{ backgroundColor: palette.primary, borderColor: palette.border }}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
 

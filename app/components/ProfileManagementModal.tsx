@@ -137,8 +137,8 @@ export function ProfileManagementModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/15 backdrop-blur-xs" style={{ colorScheme: "light" }}>
-      <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+      <div className="max-w-md w-full bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-lg max-h-[90vh] overflow-y-auto">
         
         {/* Header */}
         <div className="flex justify-between items-center mb-5 pb-3 border-b border-[var(--pastel-border)]/50">
@@ -163,13 +163,27 @@ export function ProfileManagementModal({
         </div>
 
         {error && (
-          <div className="mb-4 p-3 text-xs font-semibold text-[#8a223a] bg-[#feebee] rounded-2xl border border-[#f8cad3] text-center">
+          <div
+            className="mb-4 p-3 text-xs font-semibold rounded-2xl border text-center"
+            style={{
+              backgroundColor: "var(--pastel-error-bg)",
+              color: "var(--pastel-error-text)",
+              borderColor: "var(--pastel-error-border)",
+            }}
+          >
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-3 text-xs font-semibold text-[#1c4327] bg-[#e5f6ea] rounded-2xl border border-[#c5e8cf] text-center">
+          <div
+            className="mb-4 p-3 text-xs font-semibold rounded-2xl border text-center"
+            style={{
+              backgroundColor: "var(--pastel-success-bg)",
+              color: "var(--pastel-success-text)",
+              borderColor: "var(--pastel-success-border)",
+            }}
+          >
             {success}
           </div>
         )}
@@ -192,7 +206,7 @@ export function ProfileManagementModal({
                 Profile Photo
               </label>
               <div className="flex gap-2">
-                <label className="cursor-pointer px-3 py-1.5 bg-white border border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)] text-[var(--pastel-text)] rounded-xl text-xs font-bold transition-all shadow-2xs">
+                <label className="cursor-pointer px-3 py-1.5 bg-[var(--pastel-card)] border border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)] text-[var(--pastel-text)] rounded-xl text-xs font-bold transition-all shadow-2xs">
                   <span>{uploadingPhoto ? "Processing..." : "Upload Photo"}</span>
                   <input
                     type="file"
@@ -206,7 +220,7 @@ export function ProfileManagementModal({
                   <button
                     type="button"
                     onClick={() => setPhotoURL("")}
-                    className="px-2.5 py-1.5 text-xs text-[var(--pastel-subtext)] hover:text-[#8a223a] font-semibold"
+                    className="px-2.5 py-1.5 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-error-text)] font-semibold"
                   >
                     Remove
                   </button>
@@ -228,7 +242,7 @@ export function ProfileManagementModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your cute nickname"
-              className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)]"
+              className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
             />
           </div>
 
@@ -244,7 +258,7 @@ export function ProfileManagementModal({
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                 placeholder="cozy_nomad"
-                className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)]"
+                className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
                 required
               />
             </div>
@@ -257,10 +271,11 @@ export function ProfileManagementModal({
             </label>
             <input
               type="text"
+              autoComplete="off"
               value={favSong}
               onChange={(e) => setFavSong(e.target.value)}
               placeholder="e.g. JVKE - Golden Hour (or Spotify link)"
-              className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)]"
+              className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
             />
           </div>
 
@@ -272,17 +287,19 @@ export function ProfileManagementModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
                 type="password"
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="New password"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-white text-xs text-[var(--pastel-text)] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               />
               <input
                 type="password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm password"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-white text-xs text-[var(--pastel-text)] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               />
             </div>
           </div>

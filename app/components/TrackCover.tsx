@@ -45,7 +45,7 @@ export function TrackCover({
         src={activeCover}
         alt={alt}
         onError={() => setFailedSrc(activeCover)}
-        className={`${sizeClass} rounded-xl object-cover shrink-0 border bg-white shadow-2xs`}
+        className={`${sizeClass} rounded-xl object-cover shrink-0 border bg-[var(--pastel-card)] shadow-2xs`}
         style={{ borderColor: "var(--pastel-border)" }}
       />
     );

@@ -95,7 +95,7 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
   };
 
   return (
-    <div className="relative" ref={containerRef} style={{ colorScheme: "light" }}>
+    <div className="relative" ref={containerRef}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -113,8 +113,8 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
 
       {isOpen && (
         <div
-          className="absolute bottom-full left-0 mb-2.5 w-80 sm:w-96 bg-white rounded-3xl border shadow-xl z-50 overflow-hidden"
-          style={{ borderColor: "var(--pastel-border)", colorScheme: "light" }}
+          className="absolute bottom-full left-0 mb-2.5 w-80 sm:w-96 bg-[var(--pastel-card)] rounded-3xl border shadow-xl z-50 overflow-hidden"
+          style={{ borderColor: "var(--pastel-border)" }}
         >
           {/* Search Input */}
           <div
@@ -129,7 +129,7 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search GIFs or paste a .gif URL..."
-              className="w-full px-3 py-1.5 rounded-xl border bg-white text-xs focus:outline-none focus:ring-2"
+              className="w-full px-3 py-1.5 rounded-xl border bg-[var(--pastel-card)] text-xs focus:outline-none focus:ring-2"
               style={{
                 borderColor: "var(--pastel-border)",
                 color: "var(--pastel-text)",
@@ -151,7 +151,7 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
                       }}
                       className="px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer shrink-0"
                       style={{
-                        backgroundColor: active ? "var(--pastel-primary)" : "#ffffff",
+                        backgroundColor: active ? "var(--pastel-primary)" : "var(--pastel-card)",
                         color: active ? "#ffffff" : "var(--pastel-subtext)",
                       }}
                     >
@@ -164,7 +164,7 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
           </div>
 
           {/* Custom GIF URL Sender OR Reaction Grid */}
-          <div className="p-2.5 max-h-64 overflow-y-auto bg-white">
+          <div className="p-2.5 max-h-64 overflow-y-auto bg-[var(--pastel-card)]">
             {isCustomGifUrl ? (
               <div className="space-y-2 text-center p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -205,7 +205,7 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
                     key={g.id}
                     type="button"
                     onClick={() => handleChoose({ url: g.url, title: g.title })}
-                    className="group relative rounded-2xl overflow-hidden border hover:opacity-95 transition-all cursor-pointer bg-stone-50"
+                    className="group relative rounded-2xl overflow-hidden border hover:opacity-95 transition-all cursor-pointer bg-[var(--pastel-tint)]"
                     style={{ borderColor: "var(--pastel-border)" }}
                     title={`Send ${g.title} GIF`}
                   >

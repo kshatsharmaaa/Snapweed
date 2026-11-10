@@ -8,12 +8,13 @@
   --color-pastel-border: var(--pastel-border);
   --color-pastel-text: var(--pastel-text);
   --color-pastel-subtext: var(--pastel-subtext);
+  --color-pastel-nav: var(--pastel-nav);
 }
 
 :root,
 html,
 body {
-  color-scheme: light !important;
+  color-scheme: light;
   --pastel-primary: #d87080;
   --pastel-bg: #fff6f8;
   --pastel-card: #ffffff;
@@ -21,6 +22,13 @@ body {
   --pastel-border: #f8cad3;
   --pastel-text: #4f202b;
   --pastel-subtext: #9e5c6b;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
+  --pastel-error-bg: #feebee;
+  --pastel-error-text: #8a223a;
+  --pastel-error-border: #f8cad3;
+  --pastel-success-bg: #e5f6ea;
+  --pastel-success-text: #1c4327;
+  --pastel-success-border: #c5e8cf;
 }
 
 /* 1. Blush Rose */
@@ -33,6 +41,19 @@ html[data-theme="blush"] {
   --pastel-border: #f8cad3;
   --pastel-text: #4f202b;
   --pastel-subtext: #9e5c6b;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="blush"][data-mode="dark"],
+html[data-theme="blush"][data-mode="dark"] {
+  --pastel-primary: #da6e80;
+  --pastel-bg: #150c10;
+  --pastel-card: #211319;
+  --pastel-tint: #2f1b24;
+  --pastel-border: #4d2937;
+  --pastel-text: #fcebef;
+  --pastel-subtext: #cfa2ad;
+  --pastel-nav: rgba(33, 19, 25, 0.92);
 }
 
 /* 2. Matcha Mint */
@@ -45,6 +66,19 @@ html[data-theme="matcha"] {
   --pastel-border: #bce6c7;
   --pastel-text: #194023;
   --pastel-subtext: #4a7554;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="matcha"][data-mode="dark"],
+html[data-theme="matcha"][data-mode="dark"] {
+  --pastel-primary: #4d9964;
+  --pastel-bg: #0d1710;
+  --pastel-card: #142319;
+  --pastel-tint: #1d3124;
+  --pastel-border: #2e4d39;
+  --pastel-text: #eaf7ee;
+  --pastel-subtext: #9ac4a7;
+  --pastel-nav: rgba(20, 35, 25, 0.92);
 }
 
 /* 3. Soft Lavender */
@@ -57,6 +91,19 @@ html[data-theme="lavender"] {
   --pastel-border: #d4c7ee;
   --pastel-text: #322355;
   --pastel-subtext: #66528e;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="lavender"][data-mode="dark"],
+html[data-theme="lavender"][data-mode="dark"] {
+  --pastel-primary: #846ac9;
+  --pastel-bg: #120f1c;
+  --pastel-card: #1c172b;
+  --pastel-tint: #27203b;
+  --pastel-border: #403561;
+  --pastel-text: #f2eeff;
+  --pastel-subtext: #b8add9;
+  --pastel-nav: rgba(28, 23, 43, 0.92);
 }
 
 /* 4. Sweet Peach */
@@ -69,6 +116,19 @@ html[data-theme="peach"] {
   --pastel-border: #fad0bc;
   --pastel-text: #4e210d;
   --pastel-subtext: #8b5236;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="peach"][data-mode="dark"],
+html[data-theme="peach"][data-mode="dark"] {
+  --pastel-primary: #df7340;
+  --pastel-bg: #180f0b;
+  --pastel-card: #251812;
+  --pastel-tint: #332018;
+  --pastel-border: #543426;
+  --pastel-text: #fff0e8;
+  --pastel-subtext: #d6a791;
+  --pastel-nav: rgba(37, 24, 18, 0.92);
 }
 
 /* 5. Baby Blue */
@@ -81,6 +141,19 @@ html[data-theme="sky"] {
   --pastel-border: #bcdbf6;
   --pastel-text: #18385d;
   --pastel-subtext: #4f7095;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="sky"][data-mode="dark"],
+html[data-theme="sky"][data-mode="dark"] {
+  --pastel-primary: #4a8ed8;
+  --pastel-bg: #0c131d;
+  --pastel-card: #131e2d;
+  --pastel-tint: #1b2b40;
+  --pastel-border: #2c4566;
+  --pastel-text: #ebf4ff;
+  --pastel-subtext: #9dbbe0;
+  --pastel-nav: rgba(19, 30, 45, 0.92);
 }
 
 /* 6. Buttercream */
@@ -93,23 +166,62 @@ html[data-theme="butter"] {
   --pastel-border: #fae696;
   --pastel-text: #47390a;
   --pastel-subtext: #7a672f;
+  --pastel-nav: rgba(255, 255, 255, 0.9);
 }
 
-html, body {
-  color-scheme: light !important;
+[data-theme="butter"][data-mode="dark"],
+html[data-theme="butter"][data-mode="dark"] {
+  --pastel-primary: #bfa026;
+  --pastel-bg: #161309;
+  --pastel-card: #221d0f;
+  --pastel-tint: #302916;
+  --pastel-border: #4f4324;
+  --pastel-text: #fdf7e2;
+  --pastel-subtext: #cfc08e;
+  --pastel-nav: rgba(34, 29, 15, 0.92);
+}
+
+[data-mode="dark"],
+html[data-mode="dark"] {
+  color-scheme: dark;
+  --pastel-error-bg: rgba(190, 56, 86, 0.18);
+  --pastel-error-text: #ffb3c2;
+  --pastel-error-border: rgba(235, 108, 136, 0.38);
+  --pastel-success-bg: rgba(62, 148, 92, 0.2);
+  --pastel-success-text: #a5e6ba;
+  --pastel-success-border: rgba(94, 186, 125, 0.38);
+}
+
+html,
+body {
   background-color: var(--pastel-bg) !important;
   color: var(--pastel-text) !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Force light appearance on all form inputs and prevent OS dark mode inversion */
-*, *::before, *::after {
-  color-scheme: light !important;
+input,
+textarea,
+select {
+  color-scheme: inherit;
 }
 
-input, textarea, select, button {
-  color-scheme: light !important;
+input::placeholder,
+textarea::placeholder {
+  color: var(--pastel-subtext);
+  opacity: 0.72;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--pastel-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--pastel-bg) inset !important;
+  caret-color: var(--pastel-text);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 /* Soft cozy scrollbars */

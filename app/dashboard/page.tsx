@@ -20,12 +20,15 @@ import {
   getUserProfile, 
   updateUserProfile 
 } from "@/lib/user-profile";
-import { 
-  PASTEL_THEMES, 
-  applyPastelTheme, 
+import {
+  PASTEL_THEMES,
+  applyPastelTheme,
+  getPastelPalette,
   getStoredPastelTheme,
-  DEFAULT_THEME_ID 
+  getStoredThemeMode,
+  DEFAULT_THEME_ID,
 } from "@/lib/pastel-themes";
+import { useStoredThemeMode } from "@/lib/usePastelTheme";
 import { ProfileManagementModal } from "@/app/components/ProfileManagementModal";
 import { QuestionsBoard } from "@/app/components/QuestionsBoard";
 import { BlogsBoard } from "@/app/components/BlogsBoard";
@@ -33,11 +36,13 @@ import { SongsBoard } from "@/app/components/SongsBoard";
 import { FeedbackBoard } from "@/app/components/FeedbackBoard";
 import { NotificationBell } from "@/app/components/NotificationBell";
 import { FavoriteSongBanner } from "@/app/components/TrackCover";
+import { ThemeModeToggle } from "@/app/components/ThemeModeToggle";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [currentTheme, setCurrentTheme] = useState<string>(DEFAULT_THEME_ID);
+  const activeMode = useStoredThemeMode();
   const [loading, setLoading] = useState(true);
 
   // Active Community Sub-view: "questions" | "blogs" | "songs" | "feedback"
@@ -57,12 +62,13 @@ export default function Dashboard() {
 
   const router = useRouter();
 
-  // Sync client query tab & stored theme cleanly post-hydration
+  // Sync client query tab & stored theme/mode cleanly post-hydration
   useEffect(() => {
     const syncTimer = setTimeout(() => {
       const stored = getStoredPastelTheme();
+      const storedMode = getStoredThemeMode();
       setCurrentTheme(stored);
-      applyPastelTheme(stored);
+      applyPastelTheme(stored, storedMode);
 
       const t = new URLSearchParams(window.location.search).get("tab");
       if (t === "blogs" || t === "songs" || t === "questions" || t === "feedback") {
@@ -78,12 +84,19 @@ export default function Dashboard() {
       if (currentUser) {
         setUser(currentUser);
         const stored = getStoredPastelTheme();
+        const storedMode = getStoredThemeMode();
         const data = await getUserProfile(currentUser.uid);
         if (data) {
           setProfile(data);
           const chosen = data.themeColor || stored || DEFAULT_THEME_ID;
+          const prefMode =
+            typeof data.darkMode === "boolean"
+              ? data.darkMode
+                ? "dark"
+                : "light"
+              : storedMode;
           setCurrentTheme(chosen);
-          applyPastelTheme(chosen);
+          applyPastelTheme(chosen, prefMode);
         } else {
           // Fallback initial profile
           const fallbackUsername = currentUser.email?.split("@")[0] || "friend";
@@ -93,10 +106,11 @@ export default function Dashboard() {
             username: fallbackUsername,
             name: fallbackUsername,
             themeColor: chosen,
+            darkMode: storedMode === "dark",
           };
           setProfile(initProfile);
           setCurrentTheme(chosen);
-          applyPastelTheme(chosen);
+          applyPastelTheme(chosen, storedMode);
         }
       } else {
         router.push("/login");
@@ -109,7 +123,7 @@ export default function Dashboard() {
 
   const handleSelectPastelTheme = async (themeKey: string) => {
     setCurrentTheme(themeKey);
-    applyPastelTheme(themeKey);
+    applyPastelTheme(themeKey, activeMode);
     setProfile((prev) => (prev ? { ...prev, themeColor: themeKey } : null));
 
     if (user) {
@@ -211,7 +225,7 @@ export default function Dashboard() {
     return (
       <div 
         className="min-h-screen flex items-center justify-center transition-colors"
-        style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-subtext)", colorScheme: "light" }}
+        style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-subtext)" }}
       >
         <div className="flex flex-col items-center gap-2">
           <div 
@@ -231,13 +245,13 @@ export default function Dashboard() {
   return (
     <div 
       className="min-h-screen pb-16 transition-colors duration-200"
-      style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)", colorScheme: "light" }}
+      style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
     >
       
       {/* Top Friendly Nav */}
       <nav 
-        className="bg-white/90 backdrop-blur-md border-b sticky top-0 z-30 transition-colors"
-        style={{ borderColor: "var(--pastel-border)" }}
+        className="backdrop-blur-md border-b sticky top-0 z-30 transition-colors"
+        style={{ backgroundColor: "var(--pastel-nav)", borderColor: "var(--pastel-border)" }}
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex justify-between items-center">
           
@@ -248,8 +262,10 @@ export default function Dashboard() {
             </span>
           </div>
 
-          {/* Notifications, User info & Profile Button */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Notifications, Theme Mode, User info & Profile Button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeModeToggle uid={user.uid} />
+
             <NotificationBell
               currentUid={user.uid}
               onNavigateTab={(tab) => {
@@ -273,7 +289,7 @@ export default function Dashboard() {
               title="Edit Profile"
             >
               <div 
-                className="w-7 h-7 rounded-full overflow-hidden bg-white border flex items-center justify-center text-xs font-bold shadow-2xs"
+                className="w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-card)] border flex items-center justify-center text-xs font-bold shadow-2xs"
                 style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-primary)" }}
               >
                 {profile.photoURL ? (
@@ -308,7 +324,7 @@ export default function Dashboard() {
         
         {/* Pastel Theme Selector Right on Top of the Screen */}
         <div 
-          className="bg-white rounded-3xl p-5 border shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all"
+          className="bg-[var(--pastel-card)] rounded-3xl p-5 border shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all"
           style={{ borderColor: "var(--pastel-border)" }}
         >
           <div>
@@ -324,6 +340,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-2">
             {Object.values(PASTEL_THEMES).map((th) => {
               const isActive = activeThemeId === th.id;
+              const palette = getPastelPalette(th.id, activeMode);
               return (
                 <button
                   key={th.id}
@@ -335,22 +352,22 @@ export default function Dashboard() {
                       : "opacity-80 hover:opacity-100 hover:scale-102"
                   }`}
                   style={{
-                    backgroundColor: th.tint,
-                    borderColor: isActive ? th.primary : th.border,
-                    color: th.text,
-                    outlineColor: th.primary,
+                    backgroundColor: palette.tint,
+                    borderColor: isActive ? palette.primary : palette.border,
+                    color: palette.text,
+                    outlineColor: palette.primary,
                   }}
                   title={th.name}
                 >
                   <span 
                     className="w-2.5 h-2.5 rounded-full shrink-0" 
-                    style={{ backgroundColor: th.primary }} 
+                    style={{ backgroundColor: palette.primary }} 
                   />
                   <span>{th.name}</span>
                   {isActive && (
                     <span 
                       className="text-[9px] px-1 py-0.2 rounded-full font-bold text-white leading-tight"
-                      style={{ backgroundColor: th.primary }}
+                      style={{ backgroundColor: palette.primary }}
                     >
                       Active
                     </span>
@@ -371,7 +388,14 @@ export default function Dashboard() {
 
         {/* Room Error Banner */}
         {roomError && (
-          <div className="p-3 text-xs font-bold text-[#8a223a] bg-[#feebee] rounded-2xl border border-[#f8cad3] text-center">
+          <div
+            className="p-3 text-xs font-bold rounded-2xl border text-center"
+            style={{
+              backgroundColor: "var(--pastel-error-bg)",
+              color: "var(--pastel-error-text)",
+              borderColor: "var(--pastel-error-border)",
+            }}
+          >
             {roomError}
           </div>
         )}
@@ -380,7 +404,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           
           {/* Create Room Card */}
-          <div className="bg-white rounded-3xl p-6 border border-[var(--pastel-border)] shadow-xs flex flex-col justify-between space-y-4">
+          <div className="bg-[var(--pastel-card)] rounded-3xl p-6 border border-[var(--pastel-border)] shadow-xs flex flex-col justify-between space-y-4">
             <div>
               <div 
                 className="w-10 h-10 rounded-2xl border flex items-center justify-center text-xs font-black tracking-wider uppercase mb-3 shadow-2xs"
@@ -408,10 +432,11 @@ export default function Dashboard() {
                 {showPasswordInput && (
                   <input
                     type="password"
+                    autoComplete="new-password"
                     value={createRoomPassword}
                     onChange={(e) => setCreateRoomPassword(e.target.value)}
                     placeholder="Enter optional password"
-                    className="mt-2 w-full px-3 py-1.5 text-xs rounded-xl border border-[var(--pastel-border)] bg-white text-[var(--pastel-text)] focus:outline-none"
+                    className="mt-2 w-full px-3 py-1.5 text-xs rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
                   />
                 )}
               </div>
@@ -427,7 +452,7 @@ export default function Dashboard() {
           </div>
 
           {/* Join Room Card */}
-          <div className="bg-white rounded-3xl p-6 border border-[var(--pastel-border)] shadow-xs flex flex-col justify-between space-y-4">
+          <div className="bg-[var(--pastel-card)] rounded-3xl p-6 border border-[var(--pastel-border)] shadow-xs flex flex-col justify-between space-y-4">
             <div>
               <div 
                 className="w-10 h-10 rounded-2xl border flex items-center justify-center text-xs font-black tracking-wider uppercase mb-3 shadow-2xs"
@@ -445,20 +470,23 @@ export default function Dashboard() {
               <form onSubmit={handleJoinRoom} className="mt-3 space-y-2">
                 <input
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   maxLength={6}
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.replace(/[^0-9]/g, ""))}
                   placeholder="000000"
-                  className="w-full py-2.5 px-3 text-center text-2xl font-mono tracking-widest rounded-2xl border border-[var(--pastel-border)] bg-white focus:outline-none font-bold text-[var(--pastel-text)]"
+                  className="w-full py-2.5 px-3 text-center text-2xl font-mono tracking-widest rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] font-bold text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
                   required
                 />
 
                 <input
                   type="password"
+                  autoComplete="off"
                   value={joinPassword}
                   onChange={(e) => setJoinPassword(e.target.value)}
                   placeholder="Password (if room is protected)"
-                  className="w-full py-2 px-3 text-xs rounded-xl border border-[var(--pastel-border)] bg-white text-[var(--pastel-text)] focus:outline-none"
+                  className="w-full py-2 px-3 text-xs rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
                 />
 
                 <button
@@ -478,7 +506,7 @@ export default function Dashboard() {
         <div id="community-board" className="space-y-4">
           
           {/* Sub-Tabs: Clean and Simple */}
-          <div className="flex flex-wrap gap-2 p-1.5 bg-white rounded-2xl border border-[var(--pastel-border)] shadow-2xs w-fit">
+          <div className="flex flex-wrap gap-2 p-1.5 bg-[var(--pastel-card)] rounded-2xl border border-[var(--pastel-border)] shadow-2xs w-fit">
             <button
               onClick={() => setCommunityTab("questions")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${

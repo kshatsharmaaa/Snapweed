@@ -1,7 +1,13 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { DEFAULT_THEME_ID, getStoredPastelTheme } from "./pastel-themes";
+import {
+  DEFAULT_THEME_ID,
+  DEFAULT_THEME_MODE,
+  ThemeMode,
+  getStoredPastelTheme,
+  getStoredThemeMode,
+} from "./pastel-themes";
 
 function subscribeToTheme(callback: () => void) {
   if (typeof window === "undefined") return () => {};
@@ -21,3 +27,10 @@ export function useStoredPastelTheme(): string {
   );
 }
 
+export function useStoredThemeMode(): ThemeMode {
+  return useSyncExternalStore(
+    subscribeToTheme,
+    getStoredThemeMode,
+    () => DEFAULT_THEME_MODE
+  );
+}

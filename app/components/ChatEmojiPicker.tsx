@@ -65,7 +65,7 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
   };
 
   return (
-    <div className="relative" ref={containerRef} style={{ colorScheme: "light" }}>
+    <div className="relative" ref={containerRef}>
       {/* Clean Trigger Button */}
       <button
         type="button"
@@ -100,14 +100,15 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
       {/* Apple macOS / iOS Styled Full Emoji Keyboard Popover */}
       {isOpen && (
         <div
-          className="absolute bottom-full left-0 mb-3 rounded-[22px] bg-white/95 backdrop-blur-2xl border shadow-[0_20px_55px_rgba(0,0,0,0.16)] z-50 overflow-hidden flex flex-col"
+          className="absolute bottom-full left-0 mb-3 rounded-[22px] backdrop-blur-2xl border shadow-[0_20px_55px_rgba(0,0,0,0.22)] z-50 overflow-hidden flex flex-col"
           style={{
             width: "360px",
             maxWidth: "calc(100vw - 24px)",
             height: "430px",
             maxHeight: "calc(100vh - 120px)",
+            backgroundColor: "var(--pastel-nav)",
             borderColor: "var(--pastel-border)",
-            colorScheme: "light",
+            color: "var(--pastel-text)",
           }}
         >
           <EmojiPicker.Root
@@ -124,7 +125,13 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
             }}
           >
             {/* Apple Top Search Row + Skin Tone Switcher */}
-            <div className="px-3 pt-3 pb-2 border-b border-stone-200/70 bg-stone-50/80 space-y-2 shrink-0">
+            <div
+              className="px-3 pt-3 pb-2 border-b space-y-2 shrink-0"
+              style={{
+                borderColor: "var(--pastel-border)",
+                backgroundColor: "var(--pastel-tint)",
+              }}
+            >
               <div className="flex items-center gap-2">
                 <div className="relative flex-1 flex items-center">
                   <svg
@@ -137,21 +144,21 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
                     strokeWidth="2.2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="absolute left-3 text-stone-400 pointer-events-none"
+                    className="absolute left-3 text-[var(--pastel-subtext)] pointer-events-none"
                   >
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
                   </svg>
                   <EmojiPicker.Search
                     placeholder="Search Emoji"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-stone-200/65 text-xs font-medium text-stone-800 placeholder-stone-400 outline-none focus:bg-white focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-card)] text-xs font-medium text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
                   />
                 </div>
 
                 <EmojiPicker.SkinToneSelector
                   aria-label="Select skin tone"
                   title="Change skin tone"
-                  className="size-9 rounded-xl bg-stone-200/65 hover:bg-stone-200 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  className="size-9 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-card)] hover:bg-[var(--pastel-border)] flex items-center justify-center transition-colors cursor-pointer shrink-0"
                   style={{ fontSize: "22px", lineHeight: 1, fontFamily: APPLE_EMOJI_FONT }}
                 />
               </div>
@@ -159,7 +166,7 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
               {/* Frequently Used Quick Row */}
               {recentEmojis.length > 0 && (
                 <div className="pt-0.5">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400 px-1 mb-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--pastel-subtext)] px-1 mb-1">
                     Frequently Used
                   </div>
                   <div className="grid grid-cols-7 gap-0.5">
@@ -168,7 +175,7 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
                         key={`recent_${emojiChar}`}
                         type="button"
                         onClick={() => handlePick(emojiChar)}
-                        className="flex items-center justify-center rounded-xl hover:bg-[var(--pastel-tint)] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                        className="flex items-center justify-center rounded-xl hover:bg-[var(--pastel-card)] hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         style={{
                           height: "42px",
                           fontSize: "28px",
@@ -186,7 +193,7 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
 
             {/* Virtualized Full Unicode Emoji Grid */}
             <EmojiPicker.Viewport
-              className="px-1.5 pb-2"
+              className="px-1.5 pb-2 bg-[var(--pastel-card)]"
               style={{
                 position: "relative",
                 flex: "1 1 0%",
@@ -194,11 +201,11 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
                 overflowY: "auto",
               }}
             >
-              <EmojiPicker.Loading className="flex h-full items-center justify-center text-xs font-semibold text-stone-400">
+              <EmojiPicker.Loading className="flex h-full items-center justify-center text-xs font-semibold text-[var(--pastel-subtext)]">
                 Loading Apple Emoji Keyboard...
               </EmojiPicker.Loading>
 
-              <EmojiPicker.Empty className="flex h-full items-center justify-center text-xs font-semibold text-stone-400">
+              <EmojiPicker.Empty className="flex h-full items-center justify-center text-xs font-semibold text-[var(--pastel-subtext)]">
                 {({ search }) => `No emojis matching "${search}"`}
               </EmojiPicker.Empty>
 
@@ -207,7 +214,8 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
                   CategoryHeader: ({ category, ...props }) => (
                     <div
                       {...props}
-                      className="bg-white/95 backdrop-blur-md px-2 pt-2.5 pb-1 text-[11px] font-bold uppercase tracking-wider text-stone-400"
+                      className="backdrop-blur-md px-2 pt-2.5 pb-1 text-[11px] font-bold uppercase tracking-wider text-[var(--pastel-subtext)]"
+                      style={{ backgroundColor: "var(--pastel-nav)" }}
                     >
                       {category.label}
                     </div>
@@ -242,7 +250,14 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
             </EmojiPicker.Viewport>
 
             {/* macOS Character-Viewer Style Hover Preview Footer */}
-            <div className="px-3.5 py-2 border-t border-stone-200/70 bg-stone-50/90 flex items-center gap-3 shrink-0" style={{ minHeight: "46px" }}>
+            <div
+              className="px-3.5 py-2 border-t flex items-center gap-3 shrink-0"
+              style={{
+                minHeight: "46px",
+                borderColor: "var(--pastel-border)",
+                backgroundColor: "var(--pastel-tint)",
+              }}
+            >
               <EmojiPicker.ActiveEmoji>
                 {({ emoji }) =>
                   emoji ? (
@@ -257,12 +272,12 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
                       >
                         {emoji.emoji}
                       </span>
-                      <span className="text-xs font-semibold text-stone-600 capitalize truncate">
+                      <span className="text-xs font-semibold text-[var(--pastel-text)] capitalize truncate">
                         {emoji.label}
                       </span>
                     </>
                   ) : (
-                    <span className="text-xs font-medium text-stone-400">
+                    <span className="text-xs font-medium text-[var(--pastel-subtext)]">
                       Select an emoji...
                     </span>
                   )

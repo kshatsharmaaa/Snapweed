@@ -340,7 +340,7 @@ export function SongsBoard({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors" style={{ colorScheme: "light" }}>
+    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
       
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
@@ -368,7 +368,14 @@ export function SongsBoard({
       {showAddForm && (
         <form onSubmit={handleCreateSong} className="mb-6 p-4 bg-[var(--pastel-tint)]/40 rounded-2xl border border-[var(--pastel-border)] space-y-3">
           {formError && (
-            <div className="p-2.5 text-xs font-bold text-[#8a223a] bg-[#feebee] rounded-xl border border-[#f8cad3]">
+            <div
+              className="p-2.5 text-xs font-bold rounded-xl border"
+              style={{
+                backgroundColor: "var(--pastel-error-bg)",
+                color: "var(--pastel-error-text)",
+                borderColor: "var(--pastel-error-border)",
+              }}
+            >
               {formError}
             </div>
           )}
@@ -385,14 +392,14 @@ export function SongsBoard({
                 if (formError) setFormError("");
               }}
               placeholder="https://open.spotify.com/track/..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-white text-xs text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               required
             />
           </div>
 
           {/* Live Resolved Track Preview */}
           {isMusicUrl(link) && (
-            <div className="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-[var(--pastel-border)]">
+            <div className="flex items-center gap-3 p-2.5 bg-[var(--pastel-card)] rounded-xl border border-[var(--pastel-border)]">
               <TrackCover
                 url={link}
                 savedCoverUrl={activePreview?.coverUrl}
@@ -431,7 +438,7 @@ export function SongsBoard({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. For quiet morning coffee, for late coding"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-white text-xs text-[var(--pastel-text)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
             />
           </div>
 
@@ -492,7 +499,7 @@ export function SongsBoard({
                   </div>
 
                   {s.note && (
-                    <p className="text-[11px] italic text-[var(--pastel-text)] bg-white p-2 rounded-xl border border-[var(--pastel-border)]/60 mt-2.5">
+                    <p className="text-[11px] italic text-[var(--pastel-text)] bg-[var(--pastel-card)] p-2 rounded-xl border border-[var(--pastel-border)]/60 mt-2.5">
                       &ldquo;{s.note}&rdquo;
                     </p>
                   )}
@@ -517,7 +524,7 @@ export function SongsBoard({
                     className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-0.5 rounded-full border shadow-2xs transition-all cursor-pointer ${
                       isLiked
                         ? "bg-[var(--pastel-primary)] text-white border-[var(--pastel-primary)] scale-102"
-                        : "bg-white text-[var(--pastel-primary)] border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)]"
+                        : "bg-[var(--pastel-card)] text-[var(--pastel-primary)] border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)]"
                     }`}
                   >
                     <span>{isLiked ? "Liked" : "Like"}</span>
