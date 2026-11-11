@@ -582,7 +582,12 @@ export default function Dashboard() {
           )}
 
           {communityTab === "feedback" && (
-            <FeedbackBoard currentName={profile.name || profile.username} />
+            <FeedbackBoard
+              currentUid={user.uid}
+              currentName={profile.name || profile.username}
+              currentUsername={profile.username}
+              currentPhoto={profile.photoURL}
+            />
           )}
 
         </section>

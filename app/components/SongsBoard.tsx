@@ -22,6 +22,8 @@ import {
   TrackMetadata,
 } from "@/lib/track-meta";
 import { TrackCover } from "./TrackCover";
+import { useUserPhotoDirectory, resolveAuthorPhoto } from "@/lib/user-avatars";
+import { UserAvatar } from "./UserAvatar";
 
 export interface SongItem {
   id: string;
@@ -133,6 +135,7 @@ export function SongsBoard({
   const [fetchingMeta, setFetchingMeta] = useState(false);
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const photoDir = useUserPhotoDirectory();
 
   // Sync songs from Firestore
   useEffect(() => {
@@ -466,6 +469,16 @@ export function SongsBoard({
         ) : (
           songs.map((s) => {
             const isLiked = Array.isArray(s.likedBy) && s.likedBy.includes(currentUid);
+            const authorPhoto = resolveAuthorPhoto(photoDir, {
+              authorId: s.authorId,
+              authorPhoto: s.authorPhoto,
+              authorName: s.authorName,
+              authorUsername: s.authorUsername,
+              currentUid,
+              currentPhoto,
+              currentName,
+              currentUsername,
+            });
             return (
               <div
                 key={s.id}
@@ -510,14 +523,13 @@ export function SongsBoard({
 
                 <div className="flex justify-between items-center mt-4 pt-2 text-[11px] text-[var(--pastel-subtext)]">
                   <div className="flex items-center gap-1.5">
-                    {s.authorPhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover" />
-                    ) : (
-                      <span className="w-4 h-4 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] font-bold text-[9px] flex items-center justify-center">
-                        {s.authorName?.charAt(0)?.toUpperCase() || "U"}
-                      </span>
-                    )}
+                    <UserAvatar
+                      name={s.authorName || s.authorUsername}
+                      photoUrl={authorPhoto}
+                      sizeClass="w-5 h-5"
+                      textClass="text-[9px]"
+                      bgClass="bg-[var(--pastel-tint)]"
+                    />
                     <span className="font-medium">@{s.authorUsername}</span>
                   </div>
 

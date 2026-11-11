@@ -12,6 +12,8 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useUserPhotoDirectory, resolveAuthorPhoto } from "@/lib/user-avatars";
+import { UserAvatar } from "./UserAvatar";
 
 export interface AnswerItem {
   id: string;
@@ -118,6 +120,7 @@ export function QuestionsBoard({
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [replying, setReplying] = useState(false);
+  const photoDir = useUserPhotoDirectory();
 
   useEffect(() => {
     try {
@@ -311,93 +314,116 @@ export function QuestionsBoard({
             No questions yet ~ be the first to ask!
           </div>
         ) : (
-          questions.map((q) => (
-            <div
-              key={q.id}
-              className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all"
-            >
-              {/* Question Header */}
-              <div className="flex justify-between items-start gap-3 mb-2">
-                <h4 className="text-sm sm:text-base font-bold text-[var(--pastel-text)] leading-snug">
-                  {q.question}
-                </h4>
-                <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] text-[var(--pastel-text)] font-semibold">
-                  {q.authorPhoto ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={q.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover" />
-                  ) : (
-                    <span className="w-4 h-4 rounded-full bg-[var(--pastel-card)] text-[var(--pastel-accent-text)] font-bold text-[9px] flex items-center justify-center">
-                      {q.authorName?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  )}
-                  <span>@{q.authorUsername}</span>
+          questions.map((q) => {
+            const qPhoto = resolveAuthorPhoto(photoDir, {
+              authorId: q.authorId,
+              authorPhoto: q.authorPhoto,
+              authorName: q.authorName,
+              authorUsername: q.authorUsername,
+              currentUid,
+              currentPhoto,
+              currentName,
+              currentUsername,
+            });
+            return (
+              <div
+                key={q.id}
+                className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all"
+              >
+                {/* Question Header */}
+                <div className="flex justify-between items-start gap-3 mb-2">
+                  <h4 className="text-sm sm:text-base font-bold text-[var(--pastel-text)] leading-snug">
+                    {q.question}
+                  </h4>
+                  <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] text-[var(--pastel-text)] font-semibold">
+                    <UserAvatar
+                      name={q.authorName || q.authorUsername}
+                      photoUrl={qPhoto}
+                      sizeClass="w-5 h-5"
+                      textClass="text-[10px]"
+                      bgClass="bg-[var(--pastel-card)]"
+                    />
+                    <span>@{q.authorUsername}</span>
+                  </div>
                 </div>
+
+                {/* Answers */}
+                {q.answers && q.answers.length > 0 && (
+                  <div
+                    className="mt-3 pl-3.5 space-y-2"
+                    style={{ borderLeft: "2px solid var(--pastel-primary)" }}
+                  >
+                    {q.answers.map((ans) => {
+                      const ansPhoto = resolveAuthorPhoto(photoDir, {
+                        authorId: ans.authorId,
+                        authorPhoto: ans.authorPhoto,
+                        authorName: ans.authorName,
+                        authorUsername: ans.authorUsername,
+                        currentUid,
+                        currentPhoto,
+                        currentName,
+                        currentUsername,
+                      });
+                      return (
+                        <div key={ans.id} className="text-xs text-[var(--pastel-text)] flex items-start gap-2">
+                          <UserAvatar
+                            name={ans.authorName || ans.authorUsername}
+                            photoUrl={ansPhoto}
+                            sizeClass="w-5 h-5"
+                            textClass="text-[9px]"
+                            bgClass="bg-[var(--pastel-tint)]"
+                            className="mt-0.5"
+                          />
+                          <div>
+                            <span className="font-bold text-[var(--pastel-subtext)] mr-1.5">@{ans.authorUsername}:</span>
+                            <span>{ans.text}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Reply Button or Input */}
+                {activeQuestionId === q.id ? (
+                  <div className="mt-3.5 flex gap-2">
+                    <input
+                      type="text"
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      placeholder="Write your answer..."
+                      className="flex-1 px-4 py-2 text-xs rounded-full bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => handlePostReply(q.id)}
+                      disabled={replying || !replyText.trim()}
+                      className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] text-xs font-bold rounded-full transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      Reply
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveQuestionId(null);
+                        setReplyText("");
+                      }}
+                      className="px-2.5 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)] cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setActiveQuestionId(q.id)}
+                    className="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] font-bold hover:opacity-85 transition-opacity cursor-pointer"
+                    style={{ color: "var(--pastel-accent-text)" }}
+                  >
+                    + Add Answer
+                  </button>
+                )}
               </div>
-
-              {/* Answers */}
-              {q.answers && q.answers.length > 0 && (
-                <div
-                  className="mt-3 pl-3.5 space-y-2"
-                  style={{ borderLeft: "2px solid var(--pastel-primary)" }}
-                >
-                  {q.answers.map((ans) => (
-                    <div key={ans.id} className="text-xs text-[var(--pastel-text)] flex items-start gap-2">
-                      {ans.authorPhoto ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={ans.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover shrink-0 mt-0.5" />
-                      ) : (
-                        <span className="w-4 h-4 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] font-bold text-[8px] flex items-center justify-center shrink-0 mt-0.5">
-                          {ans.authorName?.charAt(0)?.toUpperCase() || "U"}
-                        </span>
-                      )}
-                      <div>
-                        <span className="font-bold text-[var(--pastel-subtext)] mr-1.5">@{ans.authorUsername}:</span>
-                        <span>{ans.text}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Reply Button or Input */}
-              {activeQuestionId === q.id ? (
-                <div className="mt-3.5 flex gap-2">
-                  <input
-                    type="text"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Write your answer..."
-                    className="flex-1 px-4 py-2 text-xs rounded-full bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
-                    autoFocus
-                  />
-                  <button
-                    onClick={() => handlePostReply(q.id)}
-                    disabled={replying || !replyText.trim()}
-                    className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] text-xs font-bold rounded-full transition-all disabled:opacity-50 cursor-pointer"
-                  >
-                    Reply
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveQuestionId(null);
-                      setReplyText("");
-                    }}
-                    className="px-2.5 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)] cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setActiveQuestionId(q.id)}
-                  className="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] font-bold hover:opacity-85 transition-opacity cursor-pointer"
-                  style={{ color: "var(--pastel-accent-text)" }}
-                >
-                  + Add Answer
-                </button>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

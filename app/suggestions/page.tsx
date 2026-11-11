@@ -17,6 +17,8 @@ import { ThemeModeToggle } from "@/app/components/ThemeModeToggle";
 export default function SuggestionsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -32,6 +34,8 @@ export default function SuggestionsPage() {
         } else {
           setDisplayName(currentUser.email?.split("@")[0] || "Member");
         }
+        setUsername(profile?.username || currentUser.email?.split("@")[0] || "");
+        setPhotoUrl(profile?.photoURL || "");
         const preferredMode =
           typeof profile?.darkMode === "boolean"
             ? profile.darkMode
@@ -122,7 +126,12 @@ export default function SuggestionsPage() {
             Share feedback, bug reports, or feature requests
           </p>
         </div>
-        <FeedbackBoard currentName={displayName} />
+        <FeedbackBoard
+          currentUid={user.uid}
+          currentName={displayName}
+          currentUsername={username}
+          currentPhoto={photoUrl}
+        />
       </main>
     </div>
   );

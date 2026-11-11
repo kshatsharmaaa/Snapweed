@@ -27,7 +27,9 @@ import { UserProfileViewModal } from "@/app/components/UserProfileViewModal";
 import { ChatEmojiPicker } from "@/app/components/ChatEmojiPicker";
 import { ChatGifPicker, SelectedGif } from "@/app/components/ChatGifPicker";
 import { ThemeModeToggle } from "@/app/components/ThemeModeToggle";
+import { UserAvatar } from "@/app/components/UserAvatar";
 import { prepareMediaForChat, PreparedMedia } from "@/lib/chat-media";
+import { useUserPhotoDirectory, resolveAuthorPhoto } from "@/lib/user-avatars";
 
 interface Message {
   id: string;
@@ -186,6 +188,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
   const [preparingMedia, setPreparingMedia] = useState(false);
   const [mediaError, setMediaError] = useState("");
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name?: string } | null>(null);
+  const photoDir = useUserPhotoDirectory();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -814,6 +817,16 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
               const isMe = msg.senderId === user.uid;
               const isConsecutive = index > 0 && messages[index - 1].senderId === msg.senderId;
               const timeStr = formatTime(msg.createdAt);
+              const senderPhoto = resolveAuthorPhoto(photoDir, {
+                authorId: msg.senderId,
+                authorPhoto: msg.senderPhoto,
+                authorName: msg.senderName,
+                authorUsername: msg.senderUsername,
+                currentUid: user.uid,
+                currentPhoto: userPhoto,
+                currentName: userName,
+                currentUsername: userUsername,
+              });
 
               return (
                 <div key={msg.id || index} className={`flex w-full ${isMe ? "justify-end" : "justify-start"} ${isConsecutive ? "-mt-1.5" : ""}`}>
@@ -828,18 +841,19 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                             uid: msg.senderId,
                             name: msg.senderName,
                             username: msg.senderUsername,
-                            photo: msg.senderPhoto,
+                            photo: senderPhoto,
                           })
                         }
                         title={`View ${msg.senderName}'s profile`}
-                        className={`w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-card)] portfolio-shadow flex items-center justify-center text-xs shrink-0 font-bold text-[var(--pastel-accent-text)] cursor-pointer hover:opacity-85 ${isConsecutive ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+                        className={`w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-card)] portfolio-shadow flex items-center justify-center shrink-0 cursor-pointer hover:opacity-85 ${isConsecutive ? "opacity-0 pointer-events-none" : "opacity-100"}`}
                       >
-                        {msg.senderPhoto ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={msg.senderPhoto} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span>{msg.senderName?.charAt(0)?.toUpperCase() || "U"}</span>
-                        )}
+                        <UserAvatar
+                          name={msg.senderName}
+                          photoUrl={senderPhoto}
+                          sizeClass="w-7 h-7"
+                          textClass="text-xs"
+                          bgClass="bg-[var(--pastel-card)]"
+                        />
                       </button>
                     )}
 
@@ -852,7 +866,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                               uid: msg.senderId,
                               name: msg.senderName,
                               username: msg.senderUsername,
-                              photo: msg.senderPhoto,
+                              photo: senderPhoto,
                             })
                           }
                           title={`View ${msg.senderName}'s profile`}

@@ -3,15 +3,22 @@
 import { useState, useEffect } from "react";
 import { collection, addDoc, onSnapshot, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useUserPhotoDirectory, resolveAuthorPhoto } from "@/lib/user-avatars";
+import { UserAvatar } from "./UserAvatar";
 
 export interface SuggestionItem {
   id: string;
   displayName: string;
   suggestion: string;
+  authorId?: string;
+  authorPhoto?: string;
 }
 
 interface FeedbackBoardProps {
+  currentUid?: string;
   currentName?: string;
+  currentUsername?: string;
+  currentPhoto?: string;
   allowCustomName?: boolean;
 }
 
@@ -42,7 +49,10 @@ function persistLocalSuggestions(items: SuggestionItem[]) {
 }
 
 export function FeedbackBoard({
+  currentUid = "",
   currentName = "",
+  currentUsername = "",
+  currentPhoto = "",
   allowCustomName = false,
 }: FeedbackBoardProps) {
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
@@ -50,6 +60,7 @@ export function FeedbackBoard({
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [statusNotice, setStatusNotice] = useState("");
+  const photoDir = useUserPhotoDirectory();
 
   useEffect(() => {
     const hydrateTimer = setTimeout(() => {
@@ -112,6 +123,8 @@ export function FeedbackBoard({
       id: generateLocalId("sug"),
       displayName: cleanDisplayName,
       suggestion: cleanSuggestion,
+      authorId: currentUid || undefined,
+      authorPhoto: currentPhoto || undefined,
     };
 
     // Optimistic UI update
@@ -178,8 +191,17 @@ export function FeedbackBoard({
             />
           </div>
         ) : (
-          <div className="text-[11px] font-bold text-[var(--pastel-subtext)]">
-            Sharing as <span className="text-[var(--pastel-text)]">{currentName}</span>
+          <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--pastel-subtext)]">
+            <UserAvatar
+              name={currentName}
+              photoUrl={currentPhoto}
+              sizeClass="w-5 h-5"
+              textClass="text-[10px]"
+              bgClass="bg-[var(--pastel-tint)]"
+            />
+            <span>
+              Sharing as <span className="text-[var(--pastel-text)]">{currentName}</span>
+            </span>
           </div>
         )}
 
@@ -224,25 +246,40 @@ export function FeedbackBoard({
             No suggestions shared yet ~ be the first to suggest a new change!
           </div>
         ) : (
-          suggestions.map((item) => (
-            <div
-              key={item.id}
-              className="p-5 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all space-y-2"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] font-bold text-[11px] flex items-center justify-center shrink-0">
-                  {item.displayName?.charAt(0)?.toUpperCase() || "U"}
-                </span>
-                <span className="text-xs font-bold text-[var(--pastel-text)]">
-                  {item.displayName}
-                </span>
-              </div>
+          suggestions.map((item) => {
+            const authorPhoto = resolveAuthorPhoto(photoDir, {
+              authorId: item.authorId,
+              authorPhoto: item.authorPhoto,
+              authorName: item.displayName,
+              currentUid,
+              currentPhoto,
+              currentName,
+              currentUsername,
+            });
+            return (
+              <div
+                key={item.id}
+                className="p-5 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all space-y-2"
+              >
+                <div className="flex items-center gap-2.5">
+                  <UserAvatar
+                    name={item.displayName}
+                    photoUrl={authorPhoto}
+                    sizeClass="w-7 h-7"
+                    textClass="text-[11px]"
+                    bgClass="bg-[var(--pastel-tint)]"
+                  />
+                  <span className="text-xs font-bold text-[var(--pastel-text)]">
+                    {item.displayName}
+                  </span>
+                </div>
 
-              <p className="text-xs sm:text-sm text-[var(--pastel-text)] leading-relaxed whitespace-pre-wrap pl-8 opacity-90">
-                {item.suggestion}
-              </p>
-            </div>
-          ))
+                <p className="text-xs sm:text-sm text-[var(--pastel-text)] leading-relaxed whitespace-pre-wrap pl-9 opacity-90">
+                  {item.suggestion}
+                </p>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

@@ -15,6 +15,8 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useUserPhotoDirectory, resolveAuthorPhoto } from "@/lib/user-avatars";
+import { UserAvatar } from "./UserAvatar";
 
 export interface BlogItem {
   id: string;
@@ -103,6 +105,7 @@ export function BlogsBoard({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const photoDir = useUserPhotoDirectory();
 
   useEffect(() => {
     try {
@@ -334,6 +337,16 @@ export function BlogsBoard({
         ) : (
           blogs.map((b) => {
             const isLiked = Array.isArray(b.likedBy) && b.likedBy.includes(currentUid);
+            const authorPhoto = resolveAuthorPhoto(photoDir, {
+              authorId: b.authorId,
+              authorPhoto: b.authorPhoto,
+              authorName: b.authorName,
+              authorUsername: b.authorUsername,
+              currentUid,
+              currentPhoto,
+              currentName,
+              currentUsername,
+            });
             return (
               <div
                 key={b.id}
@@ -344,14 +357,13 @@ export function BlogsBoard({
                     {b.title}
                   </h4>
                   <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] text-[var(--pastel-text)] font-semibold">
-                    {b.authorPhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={b.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover" />
-                    ) : (
-                      <span className="w-4 h-4 rounded-full bg-[var(--pastel-card)] text-[var(--pastel-accent-text)] font-bold text-[9px] flex items-center justify-center">
-                        {b.authorName?.charAt(0)?.toUpperCase() || "U"}
-                      </span>
-                    )}
+                    <UserAvatar
+                      name={b.authorName || b.authorUsername}
+                      photoUrl={authorPhoto}
+                      sizeClass="w-5 h-5"
+                      textClass="text-[10px]"
+                      bgClass="bg-[var(--pastel-card)]"
+                    />
                     <span>@{b.authorUsername}</span>
                   </div>
                 </div>
