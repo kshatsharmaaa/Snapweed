@@ -13,6 +13,9 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Snapweed — Real-time Chat, Music & Notes",
   description: "Private real-time chat rooms, daily logs, shared tracks, and Q&A.",
+  other: {
+    "google-adsense-account": "ca-pub-5401615495604112",
+  },
 };
 
 const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("snapweed_theme")||"blush";var m=localStorage.getItem("snapweed_theme_mode")==="dark"?"dark":"light";var r=document.documentElement;r.setAttribute("data-theme",t);r.setAttribute("data-mode",m);r.style.colorScheme=m;}catch(e){}})();`;
