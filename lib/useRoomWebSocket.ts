@@ -33,14 +33,18 @@ interface UseRoomWebSocketOptions {
   roomId: string;
   userId?: string | null;
   userName?: string;
+  enabled?: boolean;
   onMessageReceived?: (message: WebSocketMessage) => void;
   onRoomTerminated?: () => void;
 }
+
+const MAX_HANDSHAKE_RETRIES = 5;
 
 export function useRoomWebSocket({
   roomId,
   userId,
   userName = "User",
+  enabled = true,
   onMessageReceived,
   onRoomTerminated,
 }: UseRoomWebSocketOptions) {
@@ -50,14 +54,32 @@ export function useRoomWebSocket({
   const [reconnectTrigger, setReconnectTrigger] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingClearTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const reconnectAttemptsRef = useRef(0);
-  const isManuallyClosedRef = useRef(false);
 
-  // Keep callback refs fresh
+  const userNameRef = useRef(userName);
+  useEffect(() => {
+    const prevName = userNameRef.current;
+    userNameRef.current = userName;
+    if (
+      prevName !== userName &&
+      roomId &&
+      userId &&
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN
+    ) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "update_profile",
+          roomId,
+          userId,
+          userName,
+        })
+      );
+    }
+  }, [roomId, userId, userName]);
+
   const onMessageReceivedRef = useRef(onMessageReceived);
   useEffect(() => {
     onMessageReceivedRef.current = onMessageReceived;
@@ -68,41 +90,53 @@ export function useRoomWebSocket({
     onRoomTerminatedRef.current = onRoomTerminated;
   }, [onRoomTerminated]);
 
-  // Main WebSocket subscription effect
+  // Main WebSocket subscription effect: scoped cleanup prevents stale sockets from triggering reconnect loops
   useEffect(() => {
-    if (!roomId || !userId || typeof window === "undefined") return;
+    if (!enabled || !roomId || !userId || typeof window === "undefined") {
+      return;
+    }
 
-    isManuallyClosedRef.current = false;
+    let disposed = false;
+    let opened = false;
+    let pingInterval: NodeJS.Timeout | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let cleanupForceCloseTimer: NodeJS.Timeout | null = null;
 
-    // Determine WebSocket URL
-    let wsUrl = process.env.NEXT_PUBLIC_WS_URL || "";
+    let wsUrl = (process.env.NEXT_PUBLIC_WS_URL || "").trim();
     if (!wsUrl) {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       wsUrl = `${protocol}//${window.location.host}/api/ws`;
     }
 
-    const queryParams = `?roomId=${encodeURIComponent(roomId)}&userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}`;
+    const sep = wsUrl.includes("?") ? "&" : "?";
+    const queryParams = `${sep}roomId=${encodeURIComponent(roomId)}&userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userNameRef.current)}`;
     const fullUrl = `${wsUrl}${queryParams}`;
 
     const socket = new WebSocket(fullUrl);
     wsRef.current = socket;
 
     socket.onopen = () => {
-      setConnectionStatus("connected");
-      reconnectAttemptsRef.current = 0;
+      if (disposed || wsRef.current !== socket) {
+        try {
+          socket.close(1000, "Cleanup");
+        } catch {}
+        return;
+      }
 
-      // Send join message
+      opened = true;
+      reconnectAttemptsRef.current = 0;
+      setConnectionStatus("connected");
+
       socket.send(
         JSON.stringify({
           type: "join_room",
           roomId,
           userId,
-          userName,
+          userName: userNameRef.current,
         })
       );
 
-      // Heartbeat ping every 25 seconds
-      pingIntervalRef.current = setInterval(() => {
+      pingInterval = setInterval(() => {
         if (socket.readyState === WebSocket.OPEN) {
           socket.send(JSON.stringify({ type: "ping" }));
         }
@@ -110,6 +144,8 @@ export function useRoomWebSocket({
     };
 
     socket.onmessage = (event) => {
+      if (disposed || wsRef.current !== socket) return;
+
       try {
         const data = JSON.parse(event.data);
 
@@ -174,49 +210,85 @@ export function useRoomWebSocket({
       }
     };
 
-    socket.onerror = (err) => {
-      console.warn("[useRoomWebSocket] WebSocket error:", err);
+    socket.onerror = () => {
+      if (disposed || wsRef.current !== socket) return;
       setConnectionStatus("error");
     };
 
     socket.onclose = () => {
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+      if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+      }
+      if (disposed || wsRef.current !== socket) return;
+
+      wsRef.current = null;
+
+      if (!opened && reconnectAttemptsRef.current >= MAX_HANDSHAKE_RETRIES) {
+        setConnectionStatus("error");
+        return;
+      }
+
       setConnectionStatus("disconnected");
 
-      if (!isManuallyClosedRef.current) {
-        const backoff = Math.min(1000 * Math.pow(1.5, reconnectAttemptsRef.current), 10000);
-        reconnectAttemptsRef.current += 1;
-        reconnectTimeoutRef.current = setTimeout(() => {
-          setConnectionStatus("connecting");
-          setReconnectTrigger((prev) => prev + 1);
-        }, backoff);
-      }
+      const backoff = Math.min(1000 * Math.pow(1.5, reconnectAttemptsRef.current), 10000);
+      reconnectAttemptsRef.current += 1;
+      reconnectTimer = setTimeout(() => {
+        if (disposed) return;
+        setConnectionStatus("connecting");
+        setReconnectTrigger((prev) => prev + 1);
+      }, backoff);
     };
 
     const typingTimers = typingClearTimersRef.current;
 
     return () => {
-      isManuallyClosedRef.current = true;
-      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+      disposed = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (pingInterval) clearInterval(pingInterval);
+      if (cleanupForceCloseTimer) clearTimeout(cleanupForceCloseTimer);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
       typingTimers.forEach((timer) => clearTimeout(timer));
       typingTimers.clear();
 
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(
-          JSON.stringify({
-            type: "leave_room",
-            roomId,
-            userId,
-          })
-        );
+      if (wsRef.current === socket) {
+        wsRef.current = null;
       }
-      socket.close();
-      wsRef.current = null;
+
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.onopen = null;
+        try {
+          socket.send(
+            JSON.stringify({
+              type: "leave_room",
+              roomId,
+              userId,
+            })
+          );
+          socket.close(1000, "Effect cleanup");
+        } catch {}
+      } else if (socket.readyState === WebSocket.CONNECTING) {
+        socket.onopen = () => {
+          if (cleanupForceCloseTimer) clearTimeout(cleanupForceCloseTimer);
+          try {
+            socket.close(1000, "Effect cleanup");
+          } catch {}
+        };
+        cleanupForceCloseTimer = setTimeout(() => {
+          try {
+            socket.close();
+          } catch {}
+        }, 1500);
+      } else {
+        socket.onopen = null;
+      }
     };
-  }, [roomId, userId, userName, reconnectTrigger]);
+  }, [enabled, roomId, userId, reconnectTrigger]);
 
   // Send a chat message over WebSocket
   const sendMessage = useCallback(
@@ -229,17 +301,20 @@ export function useRoomWebSocket({
       senderPhoto?: string
     ) => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-        console.warn("[useRoomWebSocket] Socket not connected, unable to send message immediately via WS");
         return null;
       }
 
-      const id = customId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
+      const id =
+        customId ||
+        (typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
       const payload: WebSocketMessage = {
         id,
         roomId,
         text,
         senderId: userId || "anon",
-        senderName: userName,
+        senderName: userNameRef.current,
         senderEmoji: senderEmoji || "",
         senderPhoto: senderPhoto || "",
         isJustOnce: Boolean(isJustOnce),
@@ -252,7 +327,7 @@ export function useRoomWebSocket({
       wsRef.current.send(JSON.stringify({ type: "chat_message", ...payload }));
       return id;
     },
-    [roomId, userId, userName]
+    [roomId, userId]
   );
 
   // Send typing notification
@@ -265,12 +340,11 @@ export function useRoomWebSocket({
           type: "typing",
           roomId,
           userId,
-          userName,
+          userName: userNameRef.current,
           isTyping,
         })
       );
 
-      // If user started typing, auto-cancel after 2.5s if no new typing happens
       if (isTyping) {
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => {
@@ -280,7 +354,7 @@ export function useRoomWebSocket({
                 type: "typing",
                 roomId,
                 userId,
-                userName,
+                userName: userNameRef.current,
                 isTyping: false,
               })
             );
@@ -288,7 +362,7 @@ export function useRoomWebSocket({
         }, 2500);
       }
     },
-    [roomId, userId, userName]
+    [roomId, userId]
   );
 
   // Broadcast room termination to all room participants
@@ -305,6 +379,7 @@ export function useRoomWebSocket({
   }, [roomId, userId]);
 
   const reconnect = useCallback(() => {
+    reconnectAttemptsRef.current = 0;
     setConnectionStatus("connecting");
     setReconnectTrigger((prev) => prev + 1);
   }, []);

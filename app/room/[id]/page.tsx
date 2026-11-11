@@ -199,36 +199,48 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
   }, []);
 
-  // 1. Authenticate user and fetch profile
+  // 1. Authenticate user and fetch profile before mounting room socket
   useEffect(() => {
+    let active = true;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        setUser(currentUser);
         const storedTheme = getStoredPastelTheme();
         const storedMode = getStoredThemeMode();
+        let resolvedName = currentUser.email?.split("@")[0] || "Friend";
 
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          if (data.name) setUserName(data.name);
-          if (data.username) setUserUsername(data.username);
-          if (data.photoURL) setUserPhoto(data.photoURL);
-          const prefMode =
-            typeof data.darkMode === "boolean"
-              ? data.darkMode
-                ? "dark"
-                : "light"
-              : storedMode;
-          applyPastelTheme(data.themeColor || storedTheme || DEFAULT_THEME_ID, prefMode);
-        } else {
-          setUserName(currentUser.email?.split("@")[0] || "Friend");
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (!active) return;
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.name) resolvedName = data.name;
+            if (data.username) setUserUsername(data.username);
+            if (data.photoURL) setUserPhoto(data.photoURL);
+            const prefMode =
+              typeof data.darkMode === "boolean"
+                ? data.darkMode
+                  ? "dark"
+                  : "light"
+                : storedMode;
+            applyPastelTheme(data.themeColor || storedTheme || DEFAULT_THEME_ID, prefMode);
+          } else {
+            applyPastelTheme(storedTheme || DEFAULT_THEME_ID, storedMode);
+          }
+        } catch {
           applyPastelTheme(storedTheme || DEFAULT_THEME_ID, storedMode);
         }
+
+        if (!active) return;
+        setUserName(resolvedName);
+        setUser(currentUser);
       } else {
         router.push("/login");
       }
     });
-    return () => unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [router]);
 
   // 2. Subscribe to Room document
@@ -315,7 +327,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
     setTimeout(() => router.push("/dashboard"), 2000);
   }, [router]);
 
-  // WebSocket Hook for real-time messaging, presence, and typing status
+  // WebSocket Hook for real-time messaging, presence, and typing status (only active once room is verified & unlocked)
   const {
     connectionStatus,
     onlineUsers,
@@ -328,6 +340,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
     roomId,
     userId: user?.uid,
     userName,
+    enabled: Boolean(user?.uid && room && isPasswordUnlocked && !error),
     onMessageReceived: handleWebSocketMessage,
     onRoomTerminated: handleRoomTerminated,
   });
