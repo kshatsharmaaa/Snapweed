@@ -77,7 +77,7 @@ const STARTER_SONGS: SongItem[] = [
     title: "Sunset Lover",
     artist: "Petit Biscuit",
     link: "",
-    note: "Gentle electronic vibes that clear your mind.",
+    note: "Clean late-night electronic track.",
     authorId: "snapweed_seed",
     authorUsername: "sam",
     authorName: "Sam",
@@ -90,7 +90,7 @@ const STARTER_SONGS: SongItem[] = [
     title: "Warm Foothills",
     artist: "alt-J",
     link: "",
-    note: "Warm acoustic guitars and cozy background soundtrack.",
+    note: "Acoustic guitars and vocals.",
     authorId: "snapweed_seed",
     authorUsername: "elena",
     authorName: "Elena",
@@ -340,16 +340,16 @@ export function SongsBoard({
   };
 
   return (
-    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
+    <div className="space-y-5">
       
-      {/* Header */}
-      <div className="flex justify-between items-center mb-5">
+      {/* Open Editorial Header */}
+      <div className="flex flex-wrap justify-between items-center gap-3 px-1">
         <div>
-          <h3 className="text-lg font-black text-[var(--pastel-text)] flex items-center gap-2">
-            Soundtrack &amp; Song Recommendations
+          <h3 className="text-base sm:text-lg font-extrabold text-[var(--pastel-text)] tracking-tight">
+            Soundtrack &amp; Songs
           </h3>
-          <p className="text-xs text-[var(--pastel-subtext)]">
-            paste a Spotify or YouTube Music link &bull; title, artist &amp; cover auto-load
+          <p className="text-xs text-[var(--pastel-subtext)] mt-0.5">
+            Paste a Spotify or YouTube Music link &bull; title, artist &amp; cover auto-load
           </p>
         </div>
 
@@ -358,7 +358,11 @@ export function SongsBoard({
             setShowAddForm(!showAddForm);
             setFormError("");
           }}
-          className="px-3.5 py-1.5 bg-[var(--pastel-tint)] hover:bg-[var(--pastel-border)] text-[var(--pastel-text)] rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all portfolio-shadow cursor-pointer ${
+            showAddForm
+              ? "bg-[var(--pastel-card)] text-[var(--pastel-text)]"
+              : "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] hover:opacity-90"
+          }`}
         >
           {showAddForm ? "Cancel" : "+ Share Link"}
         </button>
@@ -366,14 +370,13 @@ export function SongsBoard({
 
       {/* Share Track Link Form (Link Only) */}
       {showAddForm && (
-        <form onSubmit={handleCreateSong} className="mb-6 p-4 bg-[var(--pastel-tint)]/40 rounded-2xl border border-[var(--pastel-border)] space-y-3">
+        <form onSubmit={handleCreateSong} className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow space-y-3.5">
           {formError && (
             <div
-              className="p-2.5 text-xs font-bold rounded-xl border"
+              className="p-3 text-xs font-bold rounded-2xl"
               style={{
                 backgroundColor: "var(--pastel-error-bg)",
                 color: "var(--pastel-error-text)",
-                borderColor: "var(--pastel-error-border)",
               }}
             >
               {formError}
@@ -381,7 +384,7 @@ export function SongsBoard({
           )}
 
           <div>
-            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1">
+            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1.5">
               Song Link * (Spotify, YouTube Music, or SoundCloud)
             </label>
             <input
@@ -392,14 +395,14 @@ export function SongsBoard({
                 if (formError) setFormError("");
               }}
               placeholder="https://open.spotify.com/track/..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
               required
             />
           </div>
 
           {/* Live Resolved Track Preview */}
           {isMusicUrl(link) && (
-            <div className="flex items-center gap-3 p-2.5 bg-[var(--pastel-card)] rounded-xl border border-[var(--pastel-border)]">
+            <div className="flex items-center gap-3 p-3 bg-[var(--pastel-tint)] rounded-2xl">
               <TrackCover
                 url={link}
                 savedCoverUrl={activePreview?.coverUrl}
@@ -430,15 +433,15 @@ export function SongsBoard({
           )}
 
           <div>
-            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1">
-              Who is this song for? (Optional vibe note)
+            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1.5">
+              Note (optional)
             </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. For quiet morning coffee, for late coding"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              placeholder="e.g. Late-night study track"
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
             />
           </div>
 
@@ -446,7 +449,7 @@ export function SongsBoard({
             <button
               type="submit"
               disabled={submitting || !link.trim()}
-              className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-white rounded-2xl text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] rounded-full text-xs font-bold transition-all portfolio-shadow disabled:opacity-50 cursor-pointer"
             >
               {submitting ? "Sharing..." : "Share Track"}
             </button>
@@ -454,10 +457,10 @@ export function SongsBoard({
         </form>
       )}
 
-      {/* Songs List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Songs List — Borderless Elevated Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {songs.length === 0 ? (
-          <div className="col-span-full text-center py-8 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-tint)]/25 rounded-2xl border border-[var(--pastel-border)]/60">
+          <div className="col-span-full text-center py-10 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-card)] rounded-3xl portfolio-shadow">
             No tracks recommended yet ~ paste a Spotify link to share one!
           </div>
         ) : (
@@ -466,11 +469,11 @@ export function SongsBoard({
             return (
               <div
                 key={s.id}
-                className="p-3.5 bg-[var(--pastel-tint)]/20 rounded-2xl border border-[var(--pastel-border)]/70 hover:border-[var(--pastel-border)] transition-colors flex flex-col justify-between"
+                className="p-5 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start gap-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <TrackCover
                         url={s.link}
                         savedCoverUrl={s.coverUrl}
@@ -478,10 +481,10 @@ export function SongsBoard({
                         sizeClass="w-12 h-12"
                       />
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-[var(--pastel-text)] truncate">
+                        <h4 className="text-sm font-bold text-[var(--pastel-text)] truncate">
                           {s.title}
                         </h4>
-                        <p className="text-[11px] text-[var(--pastel-subtext)] truncate">
+                        <p className="text-xs text-[var(--pastel-subtext)] truncate">
                           {s.artist}
                         </p>
                       </div>
@@ -491,40 +494,40 @@ export function SongsBoard({
                         href={s.link}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-2 py-0.5 bg-[var(--pastel-tint)] hover:bg-[var(--pastel-border)] text-[var(--pastel-text)] rounded-lg text-[10px] font-bold shrink-0"
+                        className="px-3 py-1 bg-[var(--pastel-tint)] hover:opacity-85 text-[var(--pastel-accent-text)] rounded-full text-[11px] font-bold shrink-0"
                       >
-                        Listen ↗
+                        Listen
                       </a>
                     )}
                   </div>
 
                   {s.note && (
-                    <p className="text-[11px] italic text-[var(--pastel-text)] bg-[var(--pastel-card)] p-2 rounded-xl border border-[var(--pastel-border)]/60 mt-2.5">
+                    <p className="text-xs italic text-[var(--pastel-text)] bg-[var(--pastel-tint)] p-3 rounded-2xl mt-3 opacity-95">
                       &ldquo;{s.note}&rdquo;
                     </p>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center mt-3 pt-2 border-t border-[var(--pastel-border)]/50 text-[10px] text-[var(--pastel-subtext)]">
-                  <div className="flex items-center gap-1">
+                <div className="flex justify-between items-center mt-4 pt-2 text-[11px] text-[var(--pastel-subtext)]">
+                  <div className="flex items-center gap-1.5">
                     {s.authorPhoto ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.authorPhoto} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                      <img src={s.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover" />
                     ) : (
-                      <span className="w-3.5 h-3.5 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-primary)] font-bold text-[8px] flex items-center justify-center border border-[var(--pastel-border)]">
+                      <span className="w-4 h-4 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] font-bold text-[9px] flex items-center justify-center">
                         {s.authorName?.charAt(0)?.toUpperCase() || "U"}
                       </span>
                     )}
-                    <span>@{s.authorUsername}</span>
+                    <span className="font-medium">@{s.authorUsername}</span>
                   </div>
 
                   <button
                     onClick={() => handleLike(s.id)}
                     title={isLiked ? "Click to unlike" : "Click to like"}
-                    className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-0.5 rounded-full border shadow-2xs transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1 rounded-full transition-all cursor-pointer ${
                       isLiked
-                        ? "bg-[var(--pastel-primary)] text-white border-[var(--pastel-primary)] scale-102"
-                        : "bg-[var(--pastel-card)] text-[var(--pastel-primary)] border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)]"
+                        ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] shadow-2xs scale-[1.03]"
+                        : "bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] hover:opacity-85"
                     }`}
                   >
                     <span>{isLiked ? "Liked" : "Like"}</span>

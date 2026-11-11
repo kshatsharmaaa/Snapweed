@@ -104,8 +104,7 @@ export default function Login() {
       style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
     >
       <div 
-        className="relative max-w-md w-full bg-[var(--pastel-card)] rounded-3xl p-8 border shadow-sm transition-all"
-        style={{ borderColor: "var(--pastel-border)" }}
+        className="relative max-w-md w-full bg-[var(--pastel-card)] portfolio-panel p-8 portfolio-shadow transition-all"
       >
         <div className="absolute top-5 right-5">
           <ThemeModeToggle compact />
@@ -113,27 +112,25 @@ export default function Login() {
         
         {/* Header */}
         <div className="text-center mb-6">
-          <div 
-            className="w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center font-black text-xl shadow-xs transition-colors"
-            style={{ backgroundColor: "var(--pastel-tint)", color: "var(--pastel-primary)" }}
-          >
-            S
+          <div className="flex items-center justify-center gap-1.5 mb-3" aria-hidden="true">
+            <span className="h-1 w-6 rounded-full" style={{ backgroundColor: "var(--portfolio-pink)" }} />
+            <span className="h-1 w-6 rounded-full" style={{ backgroundColor: "var(--portfolio-green)" }} />
+            <span className="h-1 w-6 rounded-full" style={{ backgroundColor: "var(--portfolio-blue)" }} />
           </div>
-          <h1 className="text-2xl font-black" style={{ color: "var(--pastel-text)" }}>
-            welcome back ~
+          <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: "var(--pastel-text)" }}>
+            Welcome back
           </h1>
           <p className="text-xs mt-1" style={{ color: "var(--pastel-subtext)" }}>
-            log in to your cozy snapweed space
+            Log in to Snapweed
           </p>
         </div>
 
         {error && (
           <div
-            className="mb-4 p-3 text-xs font-semibold rounded-2xl border text-center"
+            className="mb-4 p-3 text-xs font-semibold rounded-2xl text-center"
             style={{
               backgroundColor: "var(--pastel-error-bg)",
               color: "var(--pastel-error-text)",
-              borderColor: "var(--pastel-error-border)",
             }}
           >
             {error}
@@ -148,14 +145,14 @@ export default function Login() {
               Username
             </label>
             <div className="relative flex items-center">
-              <span className="absolute left-3.5 text-sm font-bold" style={{ color: "var(--pastel-subtext)" }}>@</span>
+              <span className="absolute left-4 text-sm font-bold" style={{ color: "var(--pastel-subtext)" }}>@</span>
               <input
                 type="text"
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
-                placeholder="cozy_nomad"
-                className="w-full pl-8 pr-4 py-3 rounded-2xl border bg-[var(--pastel-bg)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
-                style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-text)" }}
+                placeholder="username"
+                className="w-full pl-8 pr-4 py-3 rounded-2xl bg-[var(--pastel-input)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
+                style={{ color: "var(--pastel-text)" }}
                 required
               />
             </div>
@@ -171,46 +168,42 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-2xl border bg-[var(--pastel-bg)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
-              style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-text)" }}
+              className="w-full px-4 py-3 rounded-2xl bg-[var(--pastel-input)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm"
+              style={{ color: "var(--pastel-text)" }}
               required
             />
           </div>
 
           {/* Quick pastel theme selector on login */}
           <div className="pt-1">
-            <div className="flex justify-between items-center mb-1.5">
+            <div className="flex justify-between items-center mb-2">
               <span className="text-[11px] font-bold" style={{ color: "var(--pastel-subtext)" }}>
                 Theme:
               </span>
-              <span className="text-[11px] font-bold" style={{ color: "var(--pastel-primary)" }}>
+              <span className="text-[11px] font-bold" style={{ color: "var(--pastel-accent-text)" }}>
                 {PASTEL_THEMES[activeTheme]?.name}
               </span>
             </div>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="flex items-center justify-between px-3 py-2 rounded-full bg-[var(--pastel-input)]">
               {Object.values(PASTEL_THEMES).map((th) => {
                 const palette = getPastelPalette(th.id, activeMode);
+                const isActive = activeTheme === th.id;
                 return (
                   <button
                     key={th.id}
                     type="button"
                     onClick={() => handleSelectTheme(th.id)}
-                    className={`h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border ${
-                      activeTheme === th.id
-                        ? "ring-2 scale-105 shadow-xs"
-                        : "border-transparent opacity-80 hover:opacity-100 hover:scale-105"
+                    className={`w-6 h-6 rounded-full transition-all cursor-pointer ${
+                      isActive
+                        ? "scale-115 ring-2 ring-[var(--pastel-text)] ring-offset-2 ring-offset-[var(--pastel-input)]"
+                        : "opacity-75 hover:opacity-100 hover:scale-105"
                     }`}
                     style={{
-                      backgroundColor: palette.tint,
-                      borderColor: activeTheme === th.id ? palette.primary : "transparent",
+                      backgroundColor: palette.primary,
                     }}
                     title={th.name}
-                  >
-                    <span 
-                      className="w-3.5 h-3.5 rounded-full border shadow-2xs"
-                      style={{ backgroundColor: palette.primary, borderColor: palette.border }}
-                    />
-                  </button>
+                    aria-label={th.name}
+                  />
                 );
               })}
             </div>
@@ -219,8 +212,11 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 mt-2 text-white font-bold rounded-2xl transition-all shadow-sm disabled:opacity-50 text-sm hover:opacity-95 cursor-pointer"
-            style={{ backgroundColor: "var(--pastel-primary)" }}
+            className="w-full py-3 mt-2 font-bold rounded-full transition-all portfolio-shadow disabled:opacity-50 text-sm hover:opacity-95 cursor-pointer"
+            style={{
+              backgroundColor: "var(--pastel-primary)",
+              color: "var(--pastel-on-primary)",
+            }}
           >
             {loading ? "Logging in..." : "Log In"}
           </button>
@@ -231,7 +227,7 @@ export default function Login() {
           <Link 
             href="/signup" 
             className="font-bold hover:underline"
-            style={{ color: "var(--pastel-primary)" }}
+            style={{ color: "var(--pastel-accent-text)" }}
           >
             Create an account
           </Link>

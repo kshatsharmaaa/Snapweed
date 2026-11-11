@@ -96,8 +96,7 @@ export function UserProfileViewModal({
       onClick={onClose}
     >
       <div
-        className="max-w-sm w-full bg-[var(--pastel-card)] rounded-3xl p-6 border shadow-xl"
-        style={{ borderColor: "var(--pastel-border)" }}
+        className="max-w-sm w-full bg-[var(--pastel-card)] portfolio-panel p-6 portfolio-shadow"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -105,16 +104,15 @@ export function UserProfileViewModal({
           className="flex items-center justify-between pb-3 mb-4 border-b"
           style={{ borderColor: "var(--pastel-border)" }}
         >
-          <span className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--pastel-subtext)" }}>
+          <span className="text-xs font-extrabold uppercase tracking-wider" style={{ color: "var(--pastel-subtext)" }}>
             Member Profile
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center border hover:opacity-80 transition-opacity cursor-pointer"
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
             style={{
               backgroundColor: "var(--pastel-tint)",
-              borderColor: "var(--pastel-border)",
               color: "var(--pastel-text)",
             }}
             aria-label="Close profile"
@@ -139,10 +137,9 @@ export function UserProfileViewModal({
         {/* Avatar & Name */}
         <div className="flex flex-col items-center text-center">
           <div
-            className="w-20 h-20 rounded-full overflow-hidden border-2 flex items-center justify-center text-2xl font-black shadow-xs mb-3"
+            className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-2xl font-black shadow-xs mb-3"
             style={{
               backgroundColor: themeObj.tint,
-              borderColor: themeObj.primary,
               color: themeObj.primary,
             }}
           >
@@ -154,7 +151,7 @@ export function UserProfileViewModal({
             )}
           </div>
 
-          <h3 className="text-lg font-black" style={{ color: "var(--pastel-text)" }}>
+          <h3 className="text-lg font-extrabold" style={{ color: "var(--pastel-text)" }}>
             {displayName}
           </h3>
 
@@ -166,10 +163,9 @@ export function UserProfileViewModal({
 
           {/* Active Theme Pill */}
           <div
-            className="mt-3 px-3 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5"
+            className="mt-3 px-3.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5"
             style={{
               backgroundColor: themeObj.tint,
-              borderColor: themeObj.border,
               color: themeObj.text,
             }}
           >
@@ -189,10 +185,9 @@ export function UserProfileViewModal({
             </p>
           ) : favSong ? (
             <div
-              className="p-3 rounded-2xl border flex items-center gap-3"
+              className="p-3.5 rounded-2xl flex items-center gap-3"
               style={{
                 backgroundColor: "var(--pastel-tint)",
-                borderColor: "var(--pastel-border)",
               }}
             >
               {isMusicUrl(favSong) && (

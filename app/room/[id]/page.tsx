@@ -546,12 +546,13 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
         className="min-h-screen flex items-center justify-center transition-colors"
         style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-subtext)" }}
       >
-        <div className="flex flex-col items-center gap-2">
-          <div 
-            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "var(--pastel-primary)", borderTopColor: "transparent" }}
-          />
-          <span className="text-xs font-bold">entering chat room...</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="portfolio-dot" />
+            <span className="portfolio-dot" />
+            <span className="portfolio-dot" />
+          </div>
+          <span className="text-xs font-bold tracking-wide uppercase">entering chat room...</span>
         </div>
       </div>
     );
@@ -564,15 +565,17 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
         style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
       >
         <div 
-          className="bg-[var(--pastel-card)] p-7 rounded-3xl border shadow-sm text-center max-w-sm w-full"
-          style={{ borderColor: "var(--pastel-border)" }}
+          className="bg-[var(--pastel-card)] portfolio-panel p-7 portfolio-shadow text-center max-w-sm w-full"
         >
-          <h2 className="text-lg font-black mb-1" style={{ color: "var(--pastel-text)" }}>Room Unavailable</h2>
+          <h2 className="text-lg font-extrabold mb-1" style={{ color: "var(--pastel-text)" }}>Room Unavailable</h2>
           <p className="text-xs mb-5" style={{ color: "var(--pastel-subtext)" }}>{error}</p>
           <button 
             onClick={() => router.push("/dashboard")}
-            className="w-full py-2.5 text-white font-bold rounded-2xl text-xs transition-all shadow-xs cursor-pointer"
-            style={{ backgroundColor: "var(--pastel-primary)" }}
+            className="w-full py-3 font-bold rounded-full text-xs transition-all portfolio-shadow cursor-pointer"
+            style={{
+              backgroundColor: "var(--pastel-primary)",
+              color: "var(--pastel-on-primary)",
+            }}
           >
             Back to Dashboard
           </button>
@@ -591,17 +594,15 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
         style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
       >
         <div 
-          className="max-w-sm w-full bg-[var(--pastel-card)] rounded-3xl p-7 border shadow-sm text-center"
-          style={{ borderColor: "var(--pastel-border)" }}
+          className="max-w-sm w-full bg-[var(--pastel-card)] portfolio-panel p-7 portfolio-shadow text-center"
         >
-          <div 
-            className="w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center text-xs font-black uppercase tracking-wider"
-            style={{ backgroundColor: "var(--pastel-tint)", color: "var(--pastel-primary)" }}
-          >
-            Pass
+          <div className="flex items-center justify-center gap-1.5 mb-3" aria-hidden="true">
+            <span className="h-1 w-6 rounded-full" style={{ backgroundColor: "var(--portfolio-pink)" }} />
+            <span className="h-1 w-6 rounded-full" style={{ backgroundColor: "var(--portfolio-green)" }} />
+            <span className="h-1 w-6 rounded-full" style={{ backgroundColor: "var(--portfolio-blue)" }} />
           </div>
-          <h2 className="text-lg font-black" style={{ color: "var(--pastel-text)" }}>Protected Room</h2>
-          <p className="text-xs mb-4" style={{ color: "var(--pastel-subtext)" }}>
+          <h2 className="text-lg font-extrabold" style={{ color: "var(--pastel-text)" }}>Protected Room</h2>
+          <p className="text-xs mt-1 mb-4" style={{ color: "var(--pastel-subtext)" }}>
             Enter the room password to join this chat.
           </p>
 
@@ -612,8 +613,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
               value={roomPasswordInput}
               onChange={(e) => setRoomPasswordInput(e.target.value)}
               placeholder="Enter password..."
-              className="w-full px-3.5 py-2.5 rounded-2xl border text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
-              style={{ borderColor: "var(--pastel-border)" }}
+              className="w-full px-4 py-2.5 rounded-2xl text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
               required
             />
             {passwordError && (
@@ -621,8 +621,11 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
             )}
             <button
               type="submit"
-              className="w-full py-2.5 text-white font-bold rounded-2xl text-xs shadow-xs cursor-pointer hover:opacity-95"
-              style={{ backgroundColor: "var(--pastel-primary)" }}
+              className="w-full py-3 font-bold rounded-full text-xs portfolio-shadow cursor-pointer hover:opacity-95"
+              style={{
+                backgroundColor: "var(--pastel-primary)",
+                color: "var(--pastel-on-primary)",
+              }}
             >
               Enter Room
             </button>
@@ -654,7 +657,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
         
       {/* Full-width Pastel Header with max-w-4xl inner alignment */}
       <header
-        className="backdrop-blur-md border-b border-[var(--pastel-border)] px-4 sm:px-6 py-3 z-30 shrink-0 transition-colors"
+        className="backdrop-blur-md px-4 sm:px-6 py-3 z-30 shrink-0 transition-colors"
         style={{ backgroundColor: "var(--pastel-nav)" }}
       >
         <div className="max-w-4xl mx-auto w-full flex items-center justify-between">
@@ -663,7 +666,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => router.push("/dashboard")}
-              className="px-3 py-1.5 rounded-xl bg-[var(--pastel-tint)] hover:opacity-80 text-[var(--pastel-text)] text-xs font-bold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+              className="px-3.5 py-1.5 rounded-full bg-[var(--pastel-card)] portfolio-shadow hover:opacity-85 text-[var(--pastel-text)] text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
               title="Back to Dashboard"
             >
               <span>←</span>
@@ -673,7 +676,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
             <div className="relative flex items-center gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-sm sm:text-base font-black text-[var(--pastel-text)] leading-tight">
+                  <h1 className="text-sm sm:text-base font-extrabold text-[var(--pastel-text)] leading-tight">
                     Chat Room
                   </h1>
                   <button
@@ -700,8 +703,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
               {/* Online Members Popover */}
               {showOnlineList && (
                 <div
-                  className="absolute left-0 top-full mt-2 w-56 bg-[var(--pastel-card)] rounded-2xl border shadow-lg z-40 p-2 space-y-1"
-                  style={{ borderColor: "var(--pastel-border)" }}
+                  className="absolute left-0 top-full mt-2 w-56 bg-[var(--pastel-card)] rounded-2xl portfolio-shadow z-40 p-2.5 space-y-1"
                 >
                   <div className="flex items-center justify-between px-2 py-1 border-b" style={{ borderColor: "var(--pastel-border)" }}>
                     <span className="text-[10px] font-black uppercase tracking-wider text-[var(--pastel-subtext)]">
@@ -710,7 +712,8 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                     <button
                       type="button"
                       onClick={() => setShowOnlineList(false)}
-                      className="text-[10px] font-bold text-[var(--pastel-primary)] cursor-pointer"
+                      className="text-[10px] font-bold cursor-pointer"
+                      style={{ color: "var(--pastel-accent-text)" }}
                     >
                       Close
                     </button>
@@ -729,7 +732,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                         className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold hover:bg-[var(--pastel-tint)] transition-colors flex items-center justify-between cursor-pointer text-[var(--pastel-text)]"
                       >
                         <span className="truncate">{ou.userName}</span>
-                        <span className="text-[10px] text-[var(--pastel-primary)]">
+                        <span className="text-[10px]" style={{ color: "var(--pastel-accent-text)" }}>
                           {ou.userId === user.uid ? "You" : "Profile"}
                         </span>
                       </button>
@@ -760,21 +763,20 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
             {/* Room Code Badge with 1-click Copy */}
             <button
               onClick={handleCopyCode}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--pastel-tint)] border border-[var(--pastel-border)] hover:bg-[var(--pastel-card)] text-xs font-bold text-[var(--pastel-text)] transition-all shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--pastel-card)] portfolio-shadow hover:opacity-85 text-xs font-bold text-[var(--pastel-text)] transition-all cursor-pointer"
               title="Click to copy room code"
             >
               <span className="text-[10px] text-[var(--pastel-subtext)] uppercase">Code:</span>
               <span className="font-mono text-sm tracking-widest">{room.securityCode}</span>
-              <span className="text-[11px] font-bold" style={{ color: "var(--pastel-primary)" }}>{copiedCode ? "Copied" : "Copy"}</span>
+              <span className="text-[11px] font-bold" style={{ color: "var(--pastel-accent-text)" }}>{copiedCode ? "Copied" : "Copy"}</span>
             </button>
 
             {/* Leave / End Room */}
             <button
               onClick={handleLeaveOrEndRoom}
-              className="px-3 py-1.5 bg-[var(--pastel-card)] hover:opacity-90 border rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              className="px-3.5 py-1.5 bg-[var(--pastel-card)] hover:opacity-90 rounded-full text-xs font-bold transition-all portfolio-shadow cursor-pointer"
               style={{ 
-                borderColor: "var(--pastel-border)", 
-                color: "var(--pastel-primary)" 
+                color: "var(--pastel-accent-text)" 
               }}
             >
               {isOwner ? "End Room" : "Leave"}
@@ -788,16 +790,21 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
       <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto w-full min-h-full space-y-3.5 flex flex-col">
           {messages.length === 0 ? (
-            <div className="m-auto flex flex-col items-center justify-center p-8 bg-[var(--pastel-card)] rounded-3xl border border-[var(--pastel-border)] shadow-xs max-w-sm text-center space-y-2">
-              <h3 className="text-base font-bold text-[var(--pastel-text)]">
+            <div className="m-auto flex flex-col items-center justify-center p-8 bg-[var(--pastel-card)] portfolio-panel portfolio-shadow max-w-sm text-center space-y-3">
+              <div className="flex items-center gap-1.5" aria-hidden="true">
+                <span className="h-1 w-5 rounded-full" style={{ backgroundColor: "var(--portfolio-pink)" }} />
+                <span className="h-1 w-5 rounded-full" style={{ backgroundColor: "var(--portfolio-green)" }} />
+                <span className="h-1 w-5 rounded-full" style={{ backgroundColor: "var(--portfolio-blue)" }} />
+              </div>
+              <h3 className="text-base font-extrabold text-[var(--pastel-text)]">
                 Welcome to the room
               </h3>
               <p className="text-xs text-[var(--pastel-subtext)] leading-relaxed">
-                Share code <strong className="font-mono bg-[var(--pastel-tint)] px-1.5 py-0.5 rounded text-[var(--pastel-text)]">{room.securityCode}</strong> with someone to chat in real-time.
+                Share code <strong className="font-mono bg-[var(--pastel-tint)] px-2 py-0.5 rounded-full text-[var(--pastel-text)]">{room.securityCode}</strong> with someone to chat in real-time.
               </p>
               <button
                 onClick={handleCopyCode}
-                className="mt-2 px-3.5 py-1.5 bg-[var(--pastel-primary)] text-white text-xs font-bold rounded-xl shadow-2xs hover:opacity-90 cursor-pointer"
+                className="mt-1 px-4 py-2 bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] text-xs font-bold rounded-full portfolio-shadow hover:opacity-90 cursor-pointer"
               >
                 {copiedCode ? "Copied to clipboard" : "Copy Room Code"}
               </button>
@@ -825,7 +832,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                           })
                         }
                         title={`View ${msg.senderName}'s profile`}
-                        className={`w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-tint)] border border-[var(--pastel-border)] flex items-center justify-center text-xs shrink-0 shadow-2xs font-bold text-[var(--pastel-primary)] cursor-pointer hover:opacity-85 ${isConsecutive ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+                        className={`w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-card)] portfolio-shadow flex items-center justify-center text-xs shrink-0 font-bold text-[var(--pastel-accent-text)] cursor-pointer hover:opacity-85 ${isConsecutive ? "opacity-0 pointer-events-none" : "opacity-100"}`}
                       >
                         {msg.senderPhoto ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -849,7 +856,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                             })
                           }
                           title={`View ${msg.senderName}'s profile`}
-                          className="text-[11px] font-bold text-[var(--pastel-subtext)] hover:text-[var(--pastel-primary)] hover:underline mb-0.5 ml-1 cursor-pointer text-left"
+                          className="text-[11px] font-bold text-[var(--pastel-subtext)] hover:text-[var(--pastel-accent-text)] hover:underline mb-0.5 ml-1 cursor-pointer text-left"
                         >
                           {msg.senderName}
                         </button>
@@ -857,10 +864,10 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
 
                       {/* Chat Bubble */}
                       <div 
-                        className={`px-4 py-2 shadow-2xs text-sm leading-relaxed rounded-2xl space-y-1.5 ${
+                        className={`px-4 py-2.5 text-sm leading-relaxed rounded-2xl space-y-1.5 ${
                           isMe 
-                            ? "bg-[var(--pastel-primary)] text-white rounded-br-xs" 
-                            : "bg-[var(--pastel-card)] border border-[var(--pastel-border)] text-[var(--pastel-text)] rounded-bl-xs"
+                            ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] rounded-br-xs shadow-xs" 
+                            : "bg-[var(--pastel-card)] text-[var(--pastel-text)] rounded-bl-xs portfolio-shadow"
                         }`}
                       >
                         {/* Media Attachment */}
@@ -903,7 +910,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                                 download={msg.mediaName || "attachment"}
                                 className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition-opacity hover:opacity-90 ${
                                   isMe
-                                    ? "bg-white/15 border-white/30 text-white"
+                                    ? "bg-black/10 border-black/15 text-[var(--pastel-on-primary)]"
                                     : "bg-[var(--pastel-tint)] border-[var(--pastel-border)] text-[var(--pastel-text)]"
                                 }`}
                               >
@@ -932,7 +939,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                         {msg.text && renderChatMessageText(msg.text)}
 
                         {timeStr && (
-                          <div className={`text-[10px] mt-0.5 text-right select-none ${isMe ? "text-white/80" : "text-[var(--pastel-subtext)]"}`}>
+                          <div className={`text-[10px] mt-0.5 text-right select-none ${isMe ? "opacity-75" : "text-[var(--pastel-subtext)]"}`}>
                             {timeStr}
                           </div>
                         )}
@@ -946,7 +953,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
 
           {/* Real-time Typing indicator banner */}
           {otherTypingUsers.length > 0 && (
-            <div className="flex items-center gap-2 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-card)]/90 px-3 py-1.5 rounded-full w-fit border border-[var(--pastel-border)] shadow-2xs">
+            <div className="flex items-center gap-2 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-card)] px-3.5 py-1.5 rounded-full w-fit portfolio-shadow">
               <span className="flex gap-1 items-center">
                 <span className="w-1.5 h-1.5 bg-[var(--pastel-primary)] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                 <span className="w-1.5 h-1.5 bg-[var(--pastel-primary)] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -961,16 +968,15 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
       </main>
 
       {/* Input Bar */}
-      <footer className="relative z-30 p-3 sm:p-4 pb-5 bg-[var(--pastel-card)] border-t border-[var(--pastel-border)] shrink-0 transition-colors">
+      <footer className="relative z-30 p-3 sm:p-4 pb-5 bg-[var(--pastel-card)] portfolio-shadow shrink-0 transition-colors">
         <div className="max-w-4xl mx-auto w-full space-y-2">
           {/* Media Error Notice */}
           {mediaError && (
             <div
-              className="p-2 text-xs font-bold rounded-xl border flex items-center justify-between"
+              className="p-2 text-xs font-bold rounded-2xl flex items-center justify-between"
               style={{
                 backgroundColor: "var(--pastel-error-bg)",
                 color: "var(--pastel-error-text)",
-                borderColor: "var(--pastel-error-border)",
               }}
             >
               <span>{mediaError}</span>
@@ -986,17 +992,17 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
 
           {/* Pending Media Attachment Preview */}
           {pendingMedia && (
-            <div className="p-2 bg-[var(--pastel-tint)] rounded-2xl border border-[var(--pastel-border)] flex items-center justify-between gap-3">
+            <div className="p-2.5 bg-[var(--pastel-tint)] rounded-2xl flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
                 {pendingMedia.type.startsWith("image/") ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={pendingMedia.url}
                     alt={pendingMedia.name}
-                    className="w-10 h-10 rounded-xl object-cover border border-[var(--pastel-border)] shrink-0"
+                    className="w-10 h-10 rounded-xl object-cover shrink-0"
                   />
                 ) : (
-                  <span className="px-2.5 py-1 rounded-xl bg-[var(--pastel-card)] border border-[var(--pastel-border)] text-[10px] font-bold text-[var(--pastel-primary)] shrink-0">
+                  <span className="px-2.5 py-1 rounded-full bg-[var(--pastel-card)] text-[10px] font-bold text-[var(--pastel-accent-text)] shrink-0">
                     {pendingMedia.type.startsWith("video/")
                       ? "Video"
                       : pendingMedia.type.startsWith("audio/")
@@ -1011,7 +1017,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
               <button
                 type="button"
                 onClick={() => setPendingMedia(null)}
-                className="px-2.5 py-1 rounded-xl bg-[var(--pastel-card)] border border-[var(--pastel-border)] text-[11px] font-bold text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)] cursor-pointer shrink-0"
+                className="px-3 py-1 rounded-full bg-[var(--pastel-card)] text-[11px] font-bold text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)] cursor-pointer shrink-0"
               >
                 Remove
               </button>
@@ -1032,10 +1038,9 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={preparingMedia}
-              className="p-2.5 rounded-full border transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0 disabled:opacity-40"
+              className="p-2.5 rounded-full transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0 disabled:opacity-40"
               style={{
                 backgroundColor: "var(--pastel-tint)",
-                borderColor: "var(--pastel-border)",
                 color: "var(--pastel-text)",
               }}
               title="Attach photo, video, audio, or file"
@@ -1071,17 +1076,17 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                 sendTyping(e.target.value.length > 0);
               }}
               placeholder="Write a message..."
-              className="flex-1 py-2.5 px-4 rounded-full border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] text-base focus:outline-none focus:bg-[var(--pastel-card)] focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+              className="flex-1 py-2.5 px-4 rounded-full bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] text-base focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
               style={{
                 fontFamily:
-                  "system-ui, -apple-system, BlinkMacSystemFont, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji'",
+                  "var(--font-montserrat), 'Montserrat', system-ui, -apple-system, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji'",
               }}
             />
 
             <button
               type="submit"
               disabled={(!newMessage.trim() && !pendingMedia) || preparingMedia}
-              className="px-5 py-2.5 bg-[var(--pastel-primary)] hover:opacity-90 text-white rounded-full text-xs font-bold transition-all shadow-xs disabled:opacity-40 cursor-pointer shrink-0"
+              className="px-5 py-2.5 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] rounded-full text-xs font-bold transition-all shadow-xs disabled:opacity-40 cursor-pointer shrink-0"
             >
               {preparingMedia ? "..." : "Send"}
             </button>
@@ -1105,8 +1110,7 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
           onClick={() => setLightboxImage(null)}
         >
           <div
-            className="bg-[var(--pastel-card)] rounded-3xl p-4 border max-w-2xl w-full shadow-xl space-y-3"
-            style={{ borderColor: "var(--pastel-border)" }}
+            className="bg-[var(--pastel-card)] portfolio-panel p-5 max-w-2xl w-full portfolio-shadow space-y-3"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2">
@@ -1117,14 +1121,14 @@ export default function Room({ params }: { params: Promise<{ id: string }> }) {
                 <a
                   href={lightboxImage.url}
                   download={lightboxImage.name || "photo.jpg"}
-                  className="px-3 py-1 rounded-xl text-[11px] font-bold bg-[var(--pastel-tint)] text-[var(--pastel-text)] border border-[var(--pastel-border)] hover:opacity-85"
+                  className="px-3.5 py-1.5 rounded-full text-[11px] font-bold bg-[var(--pastel-tint)] text-[var(--pastel-text)] hover:opacity-85"
                 >
                   Download
                 </a>
                 <button
                   type="button"
                   onClick={() => setLightboxImage(null)}
-                  className="px-3 py-1 rounded-xl text-[11px] font-bold bg-[var(--pastel-primary)] text-white cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-full text-[11px] font-bold bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] cursor-pointer hover:opacity-90"
                 >
                   Close
                 </button>

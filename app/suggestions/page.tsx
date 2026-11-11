@@ -61,12 +61,13 @@ export default function SuggestionsPage() {
           color: "var(--pastel-subtext)",
         }}
       >
-        <div className="flex flex-col items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "var(--pastel-primary)", borderTopColor: "transparent" }}
-          />
-          <span className="text-xs font-bold">loading suggestions...</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="portfolio-dot" />
+            <span className="portfolio-dot" />
+            <span className="portfolio-dot" />
+          </div>
+          <span className="text-xs font-bold tracking-wide uppercase">loading suggestions...</span>
         </div>
       </div>
     );
@@ -82,27 +83,29 @@ export default function SuggestionsPage() {
     >
       {/* Top Navbar */}
       <nav
-        className="w-full backdrop-blur-md border-b px-4 sm:px-6 py-3 sticky top-0 z-30 transition-colors"
+        className="w-full backdrop-blur-md px-4 sm:px-6 py-3 sticky top-0 z-30 transition-colors"
         style={{
           backgroundColor: "var(--pastel-nav)",
-          borderColor: "var(--pastel-border)",
         }}
       >
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <Link
             href="/dashboard"
-            className="text-xl font-black tracking-tight"
-            style={{ color: "var(--pastel-primary)" }}
+            className="text-xl font-extrabold tracking-tight"
+            style={{ color: "var(--pastel-text)" }}
           >
             snapweed
           </Link>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <ThemeModeToggle uid={user.uid} />
             <Link
               href="/dashboard"
-              className="text-xs font-bold text-white px-4 py-2 rounded-2xl shadow-xs hover:opacity-95 transition-all"
-              style={{ backgroundColor: "var(--pastel-primary)" }}
+              className="text-xs font-bold px-4 py-2 rounded-full portfolio-shadow hover:opacity-95 transition-all"
+              style={{
+                backgroundColor: "var(--pastel-primary)",
+                color: "var(--pastel-on-primary)",
+              }}
             >
               Back to Dashboard
             </Link>
@@ -110,7 +113,15 @@ export default function SuggestionsPage() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 space-y-5">
+        <div className="px-1">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight" style={{ color: "var(--pastel-text)" }}>
+            Feedback &amp; Suggestions
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "var(--pastel-subtext)" }}>
+            Share feedback, bug reports, or feature requests
+          </p>
+        </div>
         <FeedbackBoard currentName={displayName} />
       </main>
     </div>

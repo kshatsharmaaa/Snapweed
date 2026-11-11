@@ -2,8 +2,11 @@
 
 @theme {
   --color-pastel-primary: var(--pastel-primary);
+  --color-pastel-on-primary: var(--pastel-on-primary);
+  --color-pastel-accent-text: var(--pastel-accent-text);
   --color-pastel-bg: var(--pastel-bg);
   --color-pastel-card: var(--pastel-card);
+  --color-pastel-input: var(--pastel-input);
   --color-pastel-tint: var(--pastel-tint);
   --color-pastel-border: var(--pastel-border);
   --color-pastel-text: var(--pastel-text);
@@ -15,189 +18,234 @@
 html,
 body {
   color-scheme: light;
-  --pastel-primary: #d87080;
-  --pastel-bg: #fff6f8;
-  --pastel-card: #ffffff;
-  --pastel-tint: #fde8ec;
-  --pastel-border: #f8cad3;
-  --pastel-text: #4f202b;
-  --pastel-subtext: #9e5c6b;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
-  --pastel-error-bg: #feebee;
-  --pastel-error-text: #8a223a;
-  --pastel-error-border: #f8cad3;
-  --pastel-success-bg: #e5f6ea;
-  --pastel-success-text: #1c4327;
-  --pastel-success-border: #c5e8cf;
+  --portfolio-pink: #e5a1aa;
+  --portfolio-green: #7AD0AC;
+  --portfolio-blue: #8395CD;
+  --pastel-primary: #e5a1aa;
+  --pastel-on-primary: #2b2022;
+  --pastel-accent-text: #b55a67;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #F3EAE1;
+  --pastel-tint: #F4E5E2;
+  --pastel-border: rgba(229, 161, 170, 0.24);
+  --pastel-text: #333332;
+  --pastel-subtext: #756d67;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
+  --pastel-error-bg: #fbe5e8;
+  --pastel-error-text: #8c2c3d;
+  --pastel-error-border: rgba(229, 161, 170, 0.35);
+  --pastel-success-bg: #e1f5ec;
+  --pastel-success-text: #225c42;
+  --pastel-success-border: rgba(122, 208, 172, 0.35);
 }
 
-/* 1. Blush Rose */
+/* 1. Blush Pink */
 [data-theme="blush"],
 html[data-theme="blush"] {
-  --pastel-primary: #d87080;
-  --pastel-bg: #fff6f8;
-  --pastel-card: #ffffff;
-  --pastel-tint: #fde8ec;
-  --pastel-border: #f8cad3;
-  --pastel-text: #4f202b;
-  --pastel-subtext: #9e5c6b;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
+  --pastel-primary: #e5a1aa;
+  --pastel-on-primary: #2b2022;
+  --pastel-accent-text: #b55a67;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #F3EAE1;
+  --pastel-tint: #F4E5E2;
+  --pastel-border: rgba(229, 161, 170, 0.24);
+  --pastel-text: #333332;
+  --pastel-subtext: #756d67;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
 }
 
 [data-theme="blush"][data-mode="dark"],
 html[data-theme="blush"][data-mode="dark"] {
-  --pastel-primary: #da6e80;
-  --pastel-bg: #150c10;
-  --pastel-card: #211319;
-  --pastel-tint: #2f1b24;
-  --pastel-border: #4d2937;
-  --pastel-text: #fcebef;
-  --pastel-subtext: #cfa2ad;
-  --pastel-nav: rgba(33, 19, 25, 0.92);
+  --pastel-primary: #F2B6C0;
+  --pastel-on-primary: #2B1820;
+  --pastel-accent-text: #F7CED5;
+  --pastel-bg: #6B4957;
+  --pastel-card: #7A5565;
+  --pastel-input: #583A47;
+  --pastel-tint: #866070;
+  --pastel-border: rgba(250, 244, 229, 0.12);
+  --pastel-text: #FAF4E5;
+  --pastel-subtext: #EED6DB;
+  --pastel-nav: rgba(107, 73, 87, 0.86);
 }
 
-/* 2. Matcha Mint */
+/* 2. Sage Mint */
 [data-theme="matcha"],
 html[data-theme="matcha"] {
-  --pastel-primary: #4d9363;
-  --pastel-bg: #f2f9f4;
-  --pastel-card: #ffffff;
-  --pastel-tint: #e1f5e7;
-  --pastel-border: #bce6c7;
-  --pastel-text: #194023;
-  --pastel-subtext: #4a7554;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
+  --pastel-primary: #7AD0AC;
+  --pastel-on-primary: #1b2b24;
+  --pastel-accent-text: #2c7557;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #EFF1E6;
+  --pastel-tint: #E3F2EA;
+  --pastel-border: rgba(122, 208, 172, 0.26);
+  --pastel-text: #333332;
+  --pastel-subtext: #617068;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
 }
 
 [data-theme="matcha"][data-mode="dark"],
 html[data-theme="matcha"][data-mode="dark"] {
-  --pastel-primary: #4d9964;
-  --pastel-bg: #0d1710;
-  --pastel-card: #142319;
-  --pastel-tint: #1d3124;
-  --pastel-border: #2e4d39;
-  --pastel-text: #eaf7ee;
-  --pastel-subtext: #9ac4a7;
-  --pastel-nav: rgba(20, 35, 25, 0.92);
+  --pastel-primary: #8FE0BE;
+  --pastel-on-primary: #132920;
+  --pastel-accent-text: #A9E8CE;
+  --pastel-bg: #3C6657;
+  --pastel-card: #477564;
+  --pastel-input: #305447;
+  --pastel-tint: #538573;
+  --pastel-border: rgba(250, 244, 229, 0.12);
+  --pastel-text: #FAF4E5;
+  --pastel-subtext: #CBECE0;
+  --pastel-nav: rgba(60, 102, 87, 0.86);
 }
 
-/* 3. Soft Lavender */
-[data-theme="lavender"],
-html[data-theme="lavender"] {
-  --pastel-primary: #765eb5;
-  --pastel-bg: #f7f4fd;
-  --pastel-card: #ffffff;
-  --pastel-tint: #ede6f9;
-  --pastel-border: #d4c7ee;
-  --pastel-text: #322355;
-  --pastel-subtext: #66528e;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
-}
-
-[data-theme="lavender"][data-mode="dark"],
-html[data-theme="lavender"][data-mode="dark"] {
-  --pastel-primary: #846ac9;
-  --pastel-bg: #120f1c;
-  --pastel-card: #1c172b;
-  --pastel-tint: #27203b;
-  --pastel-border: #403561;
-  --pastel-text: #f2eeff;
-  --pastel-subtext: #b8add9;
-  --pastel-nav: rgba(28, 23, 43, 0.92);
-}
-
-/* 4. Sweet Peach */
-[data-theme="peach"],
-html[data-theme="peach"] {
-  --pastel-primary: #dc723e;
-  --pastel-bg: #fff7f2;
-  --pastel-card: #ffffff;
-  --pastel-tint: #ffebde;
-  --pastel-border: #fad0bc;
-  --pastel-text: #4e210d;
-  --pastel-subtext: #8b5236;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
-}
-
-[data-theme="peach"][data-mode="dark"],
-html[data-theme="peach"][data-mode="dark"] {
-  --pastel-primary: #df7340;
-  --pastel-bg: #180f0b;
-  --pastel-card: #251812;
-  --pastel-tint: #332018;
-  --pastel-border: #543426;
-  --pastel-text: #fff0e8;
-  --pastel-subtext: #d6a791;
-  --pastel-nav: rgba(37, 24, 18, 0.92);
-}
-
-/* 5. Baby Blue */
+/* 3. Periwinkle */
 [data-theme="sky"],
 html[data-theme="sky"] {
-  --pastel-primary: #4385ce;
-  --pastel-bg: #f1f7fd;
-  --pastel-card: #ffffff;
-  --pastel-tint: #e0eefc;
-  --pastel-border: #bcdbf6;
-  --pastel-text: #18385d;
-  --pastel-subtext: #4f7095;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
+  --pastel-primary: #8395CD;
+  --pastel-on-primary: #1b2033;
+  --pastel-accent-text: #4d5f9c;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #EEECE6;
+  --pastel-tint: #E6E9F4;
+  --pastel-border: rgba(131, 149, 205, 0.26);
+  --pastel-text: #333332;
+  --pastel-subtext: #636978;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
 }
 
 [data-theme="sky"][data-mode="dark"],
 html[data-theme="sky"][data-mode="dark"] {
-  --pastel-primary: #4a8ed8;
-  --pastel-bg: #0c131d;
-  --pastel-card: #131e2d;
-  --pastel-tint: #1b2b40;
-  --pastel-border: #2c4566;
-  --pastel-text: #ebf4ff;
-  --pastel-subtext: #9dbbe0;
-  --pastel-nav: rgba(19, 30, 45, 0.92);
+  --pastel-primary: #C2CEF5;
+  --pastel-on-primary: #1B223D;
+  --pastel-accent-text: #E8DBBA;
+  --pastel-bg: #526298;
+  --pastel-card: #5F70A8;
+  --pastel-input: #435182;
+  --pastel-tint: #6D7FB8;
+  --pastel-border: rgba(232, 219, 186, 0.16);
+  --pastel-text: #FAF4E5;
+  --pastel-subtext: #E8DBBA;
+  --pastel-nav: rgba(82, 98, 152, 0.86);
 }
 
-/* 6. Buttercream */
+/* 4. Soft Lavender */
+[data-theme="lavender"],
+html[data-theme="lavender"] {
+  --pastel-primary: #B5A3E3;
+  --pastel-on-primary: #241e36;
+  --pastel-accent-text: #66529c;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #F0ECEA;
+  --pastel-tint: #EDE8F6;
+  --pastel-border: rgba(181, 163, 227, 0.26);
+  --pastel-text: #333332;
+  --pastel-subtext: #6c6678;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
+}
+
+[data-theme="lavender"][data-mode="dark"],
+html[data-theme="lavender"][data-mode="dark"] {
+  --pastel-primary: #CBC0F5;
+  --pastel-on-primary: #1F1836;
+  --pastel-accent-text: #E6DFFC;
+  --pastel-bg: #594E7F;
+  --pastel-card: #675B90;
+  --pastel-input: #493F6B;
+  --pastel-tint: #7568A1;
+  --pastel-border: rgba(250, 244, 229, 0.12);
+  --pastel-text: #FAF4E5;
+  --pastel-subtext: #DFD7FA;
+  --pastel-nav: rgba(89, 78, 127, 0.86);
+}
+
+/* 5. Warm Peach */
+[data-theme="peach"],
+html[data-theme="peach"] {
+  --pastel-primary: #EFA98B;
+  --pastel-on-primary: #2e1f19;
+  --pastel-accent-text: #ad5a39;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #F4EBE1;
+  --pastel-tint: #F7E8DF;
+  --pastel-border: rgba(239, 169, 139, 0.26);
+  --pastel-text: #333332;
+  --pastel-subtext: #75635a;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
+}
+
+[data-theme="peach"][data-mode="dark"],
+html[data-theme="peach"][data-mode="dark"] {
+  --pastel-primary: #F5B89E;
+  --pastel-on-primary: #2E1915;
+  --pastel-accent-text: #FAD2C0;
+  --pastel-bg: #764E50;
+  --pastel-card: #855A5C;
+  --pastel-input: #623F41;
+  --pastel-tint: #936769;
+  --pastel-border: rgba(250, 244, 229, 0.12);
+  --pastel-text: #FAF4E5;
+  --pastel-subtext: #F5D9CE;
+  --pastel-nav: rgba(118, 78, 80, 0.86);
+}
+
+/* 6. Cream Sand */
 [data-theme="butter"],
 html[data-theme="butter"] {
-  --pastel-primary: #b8971f;
-  --pastel-bg: #fffdf2;
-  --pastel-card: #ffffff;
-  --pastel-tint: #fff6cf;
-  --pastel-border: #fae696;
-  --pastel-text: #47390a;
-  --pastel-subtext: #7a672f;
-  --pastel-nav: rgba(255, 255, 255, 0.9);
+  --pastel-primary: #E8CE74;
+  --pastel-on-primary: #2d2817;
+  --pastel-accent-text: #876c19;
+  --pastel-bg: #FAF4E5;
+  --pastel-card: #FFFDF8;
+  --pastel-input: #F4EFE0;
+  --pastel-tint: #F6EED3;
+  --pastel-border: rgba(232, 206, 116, 0.28);
+  --pastel-text: #333332;
+  --pastel-subtext: #706954;
+  --pastel-nav: rgba(250, 244, 229, 0.88);
 }
 
 [data-theme="butter"][data-mode="dark"],
 html[data-theme="butter"][data-mode="dark"] {
-  --pastel-primary: #bfa026;
-  --pastel-bg: #161309;
-  --pastel-card: #221d0f;
-  --pastel-tint: #302916;
-  --pastel-border: #4f4324;
-  --pastel-text: #fdf7e2;
-  --pastel-subtext: #cfc08e;
-  --pastel-nav: rgba(34, 29, 15, 0.92);
+  --pastel-primary: #F0DA86;
+  --pastel-on-primary: #262111;
+  --pastel-accent-text: #F5E7A8;
+  --pastel-bg: #61563C;
+  --pastel-card: #6F6346;
+  --pastel-input: #4F4630;
+  --pastel-tint: #7E7051;
+  --pastel-border: rgba(250, 244, 229, 0.12);
+  --pastel-text: #FAF4E5;
+  --pastel-subtext: #EAE0BA;
+  --pastel-nav: rgba(97, 86, 60, 0.86);
 }
 
 [data-mode="dark"],
 html[data-mode="dark"] {
   color-scheme: dark;
-  --pastel-error-bg: rgba(190, 56, 86, 0.18);
-  --pastel-error-text: #ffb3c2;
-  --pastel-error-border: rgba(235, 108, 136, 0.38);
-  --pastel-success-bg: rgba(62, 148, 92, 0.2);
-  --pastel-success-text: #a5e6ba;
-  --pastel-success-border: rgba(94, 186, 125, 0.38);
+  --portfolio-pink: #F2B6C0;
+  --portfolio-green: #8FE0BE;
+  --portfolio-blue: #C2CEF5;
+  --pastel-error-bg: rgba(242, 182, 192, 0.18);
+  --pastel-error-text: #FFD5DC;
+  --pastel-error-border: rgba(242, 182, 192, 0.3);
+  --pastel-success-bg: rgba(143, 224, 190, 0.18);
+  --pastel-success-text: #C5F5E1;
+  --pastel-success-border: rgba(143, 224, 190, 0.3);
 }
 
 html,
 body {
   background-color: var(--pastel-bg) !important;
   color: var(--pastel-text) !important;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
-  transition: background-color 0.25s ease, color 0.25s ease;
+  font-family: var(--font-montserrat), "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 input,
@@ -219,25 +267,65 @@ textarea:-webkit-autofill,
 textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--pastel-text) !important;
-  -webkit-box-shadow: 0 0 0 1000px var(--pastel-bg) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--pastel-input) inset !important;
   caret-color: var(--pastel-text);
   transition: background-color 9999s ease-in-out 0s;
 }
 
-/* Soft cozy scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Soft portfolio paper elevation (#959da533 0 8px 24px on light, gentle dusk depth on dark) */
+.portfolio-shadow {
+  box-shadow: 0 8px 24px rgba(149, 157, 165, 0.18);
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+[data-mode="dark"] .portfolio-shadow {
+  box-shadow: 0 12px 30px rgba(18, 20, 36, 0.22);
 }
-::-webkit-scrollbar-thumb {
-  background: var(--pastel-border);
+
+/* Gentle organic borderless curve motif matching ashkatts-portfolio.vercel.app */
+.portfolio-panel {
+  border-top-left-radius: 1.5rem;
+  border-bottom-right-radius: 1.5rem;
+  border-top-right-radius: 2.75rem;
+  border-bottom-left-radius: 2.75rem;
+}
+
+/* Hide scrollbars across all containers while keeping scrolling active */
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Portfolio 3-circle bouncy preloader animation */
+@keyframes portfolioDotBounce {
+  0% { transform: translateY(0); }
+  20% { transform: translateY(-10px); }
+  40%, 100% { transform: translateY(0); }
+}
+
+.portfolio-dot {
+  width: 10px;
+  height: 10px;
   border-radius: 9999px;
+  background-color: var(--pastel-primary);
+  animation: portfolioDotBounce 1s ease-in-out infinite;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--pastel-primary);
+
+.portfolio-dot:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.portfolio-dot:nth-child(3) {
+  animation-delay: 0.2s;
 }
 
 @keyframes softBounce {

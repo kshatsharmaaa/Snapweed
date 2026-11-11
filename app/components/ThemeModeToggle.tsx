@@ -22,59 +22,117 @@ export function ThemeModeToggle({ uid, compact = false }: ThemeModeToggleProps) 
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      className={`rounded-full border transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center gap-1.5 text-xs font-bold shrink-0 ${
-        compact ? "p-2" : "p-2 sm:px-3 sm:py-1.5"
-      }`}
-      style={{
-        backgroundColor: isDark ? "var(--pastel-primary)" : "var(--pastel-tint)",
-        borderColor: isDark ? "var(--pastel-primary)" : "var(--pastel-border)",
-        color: isDark ? "#ffffff" : "var(--pastel-text)",
-      }}
-      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-    >
-      {isDark ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <div className="flex items-center gap-2 shrink-0">
+      {!compact && (
+        <span
+          className="hidden sm:flex items-center justify-center transition-colors"
+          style={{ color: "var(--pastel-text)", opacity: isDark ? 0.6 : 1 }}
+          aria-hidden="true"
         >
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2" />
-          <path d="M12 20v2" />
-          <path d="m4.93 4.93 1.41 1.41" />
-          <path d="m17.66 17.66 1.41 1.41" />
-          <path d="M2 12h2" />
-          <path d="M20 12h2" />
-          <path d="m6.34 17.66-1.41 1.41" />
-          <path d="m19.07 4.93-1.41 1.41" />
-        </svg>
-      ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+        </span>
       )}
-      {!compact && <span className="hidden sm:inline">{isDark ? "Light" : "Dark"}</span>}
-    </button>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isDark}
+        onClick={handleToggle}
+        className={`group relative rounded-full flex items-center cursor-pointer transition-all duration-200 portfolio-shadow border-0 ${
+          compact ? "w-11 h-6" : "w-14 h-7"
+        }`}
+        style={{
+          backgroundColor: "var(--pastel-primary)",
+        }}
+        title={isDark ? "Switch to light cream theme" : "Switch to pastel dusk theme"}
+        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        <span
+          className={`rounded-full transition-transform duration-200 ease-in-out group-hover:scale-90 flex items-center justify-center shadow-xs ${
+            compact
+              ? `w-4 h-4 ml-1 ${isDark ? "translate-x-5" : "translate-x-0"}`
+              : `w-5 h-5 ml-1.5 ${isDark ? "translate-x-6" : "translate-x-0"}`
+          }`}
+          style={{
+            backgroundColor: "var(--pastel-bg)",
+            color: "var(--pastel-text)",
+          }}
+        >
+          {compact && (
+            isDark ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="4" />
+              </svg>
+            )
+          )}
+        </span>
+      </button>
+
+      {!compact && (
+        <span
+          className="hidden sm:flex items-center justify-center transition-colors"
+          style={{ color: "var(--pastel-text)", opacity: isDark ? 1 : 0.6 }}
+          aria-hidden="true"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </span>
+      )}
+    </div>
   );
 }
-

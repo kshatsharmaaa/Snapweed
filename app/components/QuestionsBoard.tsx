@@ -54,14 +54,14 @@ const STARTER_QUESTIONS: QuestionData[] = [
         authorId: "friend_1",
         authorUsername: "leo",
         authorName: "Leo",
-        text: "Golden Hour by JVKE or anything gentle with acoustic guitars.",
+        text: "Golden Hour by JVKE or anything with acoustic guitars.",
         createdAt: "10:30 AM",
       },
     ],
   },
   {
     id: "q_sample_2",
-    question: "What is a small cozy ritual that made you smile today?",
+    question: "What is one daily habit you actually look forward to?",
     authorId: "snapweed_host",
     authorUsername: "clara",
     authorName: "Clara",
@@ -253,22 +253,26 @@ export function QuestionsBoard({
   };
 
   return (
-    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
+    <div className="space-y-5">
       
-      {/* Header */}
-      <div className="flex justify-between items-center mb-5">
+      {/* Open Editorial Header */}
+      <div className="flex flex-wrap justify-between items-center gap-3 px-1">
         <div>
-          <h3 className="text-lg font-black text-[var(--pastel-text)] flex items-center gap-2">
+          <h3 className="text-base sm:text-lg font-extrabold text-[var(--pastel-text)] tracking-tight">
             Questions for All
           </h3>
-          <p className="text-xs text-[var(--pastel-subtext)]">
-            ask the snapweed community anything &bull; answer questions
+          <p className="text-xs text-[var(--pastel-subtext)] mt-0.5">
+            Ask the snapweed community anything &bull; answer questions
           </p>
         </div>
 
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-3.5 py-1.5 bg-[var(--pastel-tint)] hover:bg-[var(--pastel-border)] text-[var(--pastel-text)] rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all portfolio-shadow cursor-pointer ${
+            showAddForm
+              ? "bg-[var(--pastel-card)] text-[var(--pastel-text)]"
+              : "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] hover:opacity-90"
+          }`}
         >
           {showAddForm ? "Cancel" : "+ Ask Question"}
         </button>
@@ -276,7 +280,7 @@ export function QuestionsBoard({
 
       {/* Ask Question Form */}
       {showAddForm && (
-        <form onSubmit={handleCreateQuestion} className="mb-6 p-4 bg-[var(--pastel-tint)]/40 rounded-2xl border border-[var(--pastel-border)] space-y-3">
+        <form onSubmit={handleCreateQuestion} className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow space-y-3">
           <label className="block text-xs font-bold text-[var(--pastel-text)]">
             What do you want to ask everyone?
           </label>
@@ -285,14 +289,14 @@ export function QuestionsBoard({
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
             placeholder="e.g. What is your go-to comfort song when it's raining?"
-            className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+            className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
             required
           />
           <div className="flex justify-end gap-2">
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-white rounded-2xl text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] rounded-full text-xs font-bold transition-all portfolio-shadow disabled:opacity-50 cursor-pointer"
             >
               {submitting ? "Posting..." : "Post Question"}
             </button>
@@ -300,29 +304,29 @@ export function QuestionsBoard({
         </form>
       )}
 
-      {/* Questions List */}
+      {/* Questions List — Borderless Elevated Cards */}
       <div className="space-y-4">
         {questions.length === 0 ? (
-          <div className="text-center py-8 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-tint)]/25 rounded-2xl border border-[var(--pastel-border)]/60">
+          <div className="text-center py-10 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-card)] rounded-3xl portfolio-shadow">
             No questions yet ~ be the first to ask!
           </div>
         ) : (
           questions.map((q) => (
             <div
               key={q.id}
-              className="p-4 bg-[var(--pastel-tint)]/20 rounded-2xl border border-[var(--pastel-border)]/70 hover:border-[var(--pastel-border)] transition-colors"
+              className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all"
             >
               {/* Question Header */}
-              <div className="flex justify-between items-start gap-2 mb-2">
-                <h4 className="text-sm font-bold text-[var(--pastel-text)] leading-snug">
+              <div className="flex justify-between items-start gap-3 mb-2">
+                <h4 className="text-sm sm:text-base font-bold text-[var(--pastel-text)] leading-snug">
                   {q.question}
                 </h4>
-                <div className="flex items-center gap-1.5 shrink-0 text-[11px] text-[var(--pastel-subtext)] font-medium">
+                <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] text-[var(--pastel-text)] font-semibold">
                   {q.authorPhoto ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={q.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover" />
                   ) : (
-                    <span className="w-4 h-4 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-primary)] font-bold text-[9px] flex items-center justify-center border border-[var(--pastel-border)]">
+                    <span className="w-4 h-4 rounded-full bg-[var(--pastel-card)] text-[var(--pastel-accent-text)] font-bold text-[9px] flex items-center justify-center">
                       {q.authorName?.charAt(0)?.toUpperCase() || "U"}
                     </span>
                   )}
@@ -332,19 +336,22 @@ export function QuestionsBoard({
 
               {/* Answers */}
               {q.answers && q.answers.length > 0 && (
-                <div className="mt-3 pl-3 border-l-2 border-[var(--pastel-border)] space-y-2">
+                <div
+                  className="mt-3 pl-3.5 space-y-2"
+                  style={{ borderLeft: "2px solid var(--pastel-primary)" }}
+                >
                   {q.answers.map((ans) => (
-                    <div key={ans.id} className="text-xs text-[var(--pastel-text)] flex items-start gap-1.5">
+                    <div key={ans.id} className="text-xs text-[var(--pastel-text)] flex items-start gap-2">
                       {ans.authorPhoto ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={ans.authorPhoto} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0 mt-0.5" />
+                        <img src={ans.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover shrink-0 mt-0.5" />
                       ) : (
-                        <span className="w-3.5 h-3.5 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-primary)] font-bold text-[8px] flex items-center justify-center border border-[var(--pastel-border)] shrink-0 mt-0.5">
+                        <span className="w-4 h-4 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] font-bold text-[8px] flex items-center justify-center shrink-0 mt-0.5">
                           {ans.authorName?.charAt(0)?.toUpperCase() || "U"}
                         </span>
                       )}
                       <div>
-                        <span className="font-bold text-[var(--pastel-subtext)] mr-1">@{ans.authorUsername}:</span>
+                        <span className="font-bold text-[var(--pastel-subtext)] mr-1.5">@{ans.authorUsername}:</span>
                         <span>{ans.text}</span>
                       </div>
                     </div>
@@ -354,19 +361,19 @@ export function QuestionsBoard({
 
               {/* Reply Button or Input */}
               {activeQuestionId === q.id ? (
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3.5 flex gap-2">
                   <input
                     type="text"
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Write your answer..."
-                    className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+                    className="flex-1 px-4 py-2 text-xs rounded-full bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
                     autoFocus
                   />
                   <button
                     onClick={() => handlePostReply(q.id)}
                     disabled={replying || !replyText.trim()}
-                    className="px-3 py-1.5 bg-[var(--pastel-primary)] hover:opacity-90 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50"
+                    className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] text-xs font-bold rounded-full transition-all disabled:opacity-50 cursor-pointer"
                   >
                     Reply
                   </button>
@@ -375,7 +382,7 @@ export function QuestionsBoard({
                       setActiveQuestionId(null);
                       setReplyText("");
                     }}
-                    className="px-2 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
+                    className="px-2.5 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)] cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -383,7 +390,8 @@ export function QuestionsBoard({
               ) : (
                 <button
                   onClick={() => setActiveQuestionId(q.id)}
-                  className="mt-2 text-[11px] font-bold text-[var(--pastel-primary)] hover:underline"
+                  className="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] font-bold hover:opacity-85 transition-opacity cursor-pointer"
+                  style={{ color: "var(--pastel-accent-text)" }}
                 >
                   + Add Answer
                 </button>

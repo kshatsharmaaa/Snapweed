@@ -257,22 +257,26 @@ export function BlogsBoard({
   };
 
   return (
-    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
+    <div className="space-y-5">
       
-      {/* Header */}
-      <div className="flex justify-between items-center mb-5">
+      {/* Open Editorial Header */}
+      <div className="flex flex-wrap justify-between items-center gap-3 px-1">
         <div>
-          <h3 className="text-lg font-black text-[var(--pastel-text)] flex items-center gap-2">
+          <h3 className="text-base sm:text-lg font-extrabold text-[var(--pastel-text)] tracking-tight">
             Personal Logs &amp; Blogs
           </h3>
-          <p className="text-xs text-[var(--pastel-subtext)]">
-            little stories, thoughts &amp; reflections you want to share here
+          <p className="text-xs text-[var(--pastel-subtext)] mt-0.5">
+            Little stories, thoughts &amp; reflections you want to share
           </p>
         </div>
 
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-3.5 py-1.5 bg-[var(--pastel-tint)] hover:bg-[var(--pastel-border)] text-[var(--pastel-text)] rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all portfolio-shadow cursor-pointer ${
+            showAddForm
+              ? "bg-[var(--pastel-card)] text-[var(--pastel-text)]"
+              : "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] hover:opacity-90"
+          }`}
         >
           {showAddForm ? "Cancel" : "+ Write Log"}
         </button>
@@ -280,9 +284,9 @@ export function BlogsBoard({
 
       {/* Add Log Form */}
       {showAddForm && (
-        <form onSubmit={handleCreateBlog} className="mb-6 p-4 bg-[var(--pastel-tint)]/40 rounded-2xl border border-[var(--pastel-border)] space-y-3">
+        <form onSubmit={handleCreateBlog} className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow space-y-3.5">
           <div>
-            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1">
+            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1.5">
               Title
             </label>
             <input
@@ -290,21 +294,21 @@ export function BlogsBoard({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. A peaceful afternoon with tea"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1">
+            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1.5">
               What is on your mind?
             </label>
             <textarea
               rows={3}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Share your thoughts gently..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              placeholder="Write your entry..."
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
               required
             />
           </div>
@@ -313,7 +317,7 @@ export function BlogsBoard({
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-white rounded-2xl text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] rounded-full text-xs font-bold transition-all portfolio-shadow disabled:opacity-50 cursor-pointer"
             >
               {submitting ? "Publishing..." : "Post Log"}
             </button>
@@ -324,7 +328,7 @@ export function BlogsBoard({
       {/* Blog List */}
       <div className="space-y-4">
         {blogs.length === 0 ? (
-          <div className="text-center py-8 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-tint)]/25 rounded-2xl border border-[var(--pastel-border)]/60">
+          <div className="text-center py-10 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-card)] rounded-3xl portfolio-shadow">
             No blogs posted yet ~ write the first entry!
           </div>
         ) : (
@@ -333,18 +337,18 @@ export function BlogsBoard({
             return (
               <div
                 key={b.id}
-                className="p-4 bg-[var(--pastel-tint)]/20 rounded-2xl border border-[var(--pastel-border)]/70 hover:border-[var(--pastel-border)] transition-colors"
+                className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all"
               >
-                <div className="flex justify-between items-start gap-2 mb-1.5">
-                  <h4 className="text-sm font-bold text-[var(--pastel-text)]">
+                <div className="flex justify-between items-start gap-3 mb-2">
+                  <h4 className="text-sm sm:text-base font-bold text-[var(--pastel-text)]">
                     {b.title}
                   </h4>
-                  <div className="flex items-center gap-1.5 shrink-0 text-[11px] text-[var(--pastel-subtext)] font-medium">
+                  <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-[var(--pastel-tint)] text-[11px] text-[var(--pastel-text)] font-semibold">
                     {b.authorPhoto ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={b.authorPhoto} alt="" className="w-4 h-4 rounded-full object-cover" />
                     ) : (
-                      <span className="w-4 h-4 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-primary)] font-bold text-[9px] flex items-center justify-center border border-[var(--pastel-border)]">
+                      <span className="w-4 h-4 rounded-full bg-[var(--pastel-card)] text-[var(--pastel-accent-text)] font-bold text-[9px] flex items-center justify-center">
                         {b.authorName?.charAt(0)?.toUpperCase() || "U"}
                       </span>
                     )}
@@ -352,18 +356,18 @@ export function BlogsBoard({
                   </div>
                 </div>
 
-                <p className="text-xs text-[var(--pastel-text)] leading-relaxed whitespace-pre-wrap my-2">
+                <p className="text-xs sm:text-sm text-[var(--pastel-text)] leading-relaxed whitespace-pre-wrap my-2.5 opacity-90">
                   {b.content}
                 </p>
 
-                <div className="flex justify-end items-center pt-2 border-t border-[var(--pastel-border)]/50">
+                <div className="flex justify-end items-center pt-2">
                   <button
                     onClick={() => handleLike(b.id)}
                     title={isLiked ? "Click to unlike" : "Click to like"}
-                    className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border shadow-2xs transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 text-[11px] font-bold px-3.5 py-1 rounded-full transition-all cursor-pointer ${
                       isLiked
-                        ? "bg-[var(--pastel-primary)] text-white border-[var(--pastel-primary)] scale-102"
-                        : "bg-[var(--pastel-card)] text-[var(--pastel-primary)] border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)]"
+                        ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] shadow-2xs scale-[1.03]"
+                        : "bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] hover:opacity-85"
                     }`}
                   >
                     <span>{isLiked ? "Liked" : "Like"}</span>

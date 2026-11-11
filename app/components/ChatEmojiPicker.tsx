@@ -70,11 +70,10 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="p-2.5 rounded-full border transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0"
+        className="p-2.5 rounded-full transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0"
         style={{
-          backgroundColor: isOpen ? "var(--pastel-border)" : "var(--pastel-tint)",
-          borderColor: "var(--pastel-border)",
-          color: "var(--pastel-text)",
+          backgroundColor: isOpen ? "var(--pastel-primary)" : "var(--pastel-tint)",
+          color: isOpen ? "var(--pastel-on-primary)" : "var(--pastel-text)",
         }}
         title="Emoji keyboard"
         aria-label="Open Apple-styled emoji keyboard"
@@ -100,14 +99,13 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
       {/* Apple macOS / iOS Styled Full Emoji Keyboard Popover */}
       {isOpen && (
         <div
-          className="absolute bottom-full left-0 mb-3 rounded-[22px] backdrop-blur-2xl border shadow-[0_20px_55px_rgba(0,0,0,0.22)] z-50 overflow-hidden flex flex-col"
+          className="absolute bottom-full left-0 mb-3 rounded-[22px] backdrop-blur-2xl portfolio-shadow z-50 overflow-hidden flex flex-col"
           style={{
             width: "360px",
             maxWidth: "calc(100vw - 24px)",
             height: "430px",
             maxHeight: "calc(100vh - 120px)",
-            backgroundColor: "var(--pastel-nav)",
-            borderColor: "var(--pastel-border)",
+            backgroundColor: "var(--pastel-card)",
             color: "var(--pastel-text)",
           }}
         >
@@ -126,9 +124,8 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
           >
             {/* Apple Top Search Row + Skin Tone Switcher */}
             <div
-              className="px-3 pt-3 pb-2 border-b space-y-2 shrink-0"
+              className="px-3 pt-3 pb-2 space-y-2 shrink-0"
               style={{
-                borderColor: "var(--pastel-border)",
                 backgroundColor: "var(--pastel-tint)",
               }}
             >
@@ -151,7 +148,7 @@ export function ChatEmojiPicker({ onSelectEmoji }: ChatEmojiPickerProps) {
                   </svg>
                   <EmojiPicker.Search
                     placeholder="Search Emoji"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-card)] text-xs font-medium text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+                    className="w-full pl-9 pr-3 py-2 rounded-full bg-[var(--pastel-card)] text-xs font-medium text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
                   />
                 </div>
 

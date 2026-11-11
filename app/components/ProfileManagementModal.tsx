@@ -138,12 +138,12 @@ export function ProfileManagementModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-      <div className="max-w-md w-full bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-lg max-h-[90vh] overflow-y-auto">
+      <div className="max-w-md w-full bg-[var(--pastel-card)] portfolio-panel p-6 sm:p-7 portfolio-shadow max-h-[90vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex justify-between items-center mb-5 pb-3 border-b border-[var(--pastel-border)]/50">
+        <div className="flex justify-between items-center mb-5 pb-3 border-b border-[var(--pastel-border)]">
           <div>
-            <h2 className="text-xl font-black text-[var(--pastel-text)] flex items-center gap-2">
+            <h2 className="text-xl font-extrabold text-[var(--pastel-text)] flex items-center gap-2">
               Edit Your Profile
             </h2>
             <p className="text-xs text-[var(--pastel-subtext)]">
@@ -152,7 +152,7 @@ export function ProfileManagementModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-text)] hover:bg-[var(--pastel-border)] transition-colors flex items-center justify-center font-bold text-xs cursor-pointer"
+            className="w-8 h-8 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-text)] hover:opacity-80 transition-opacity flex items-center justify-center font-bold text-xs cursor-pointer"
             title="Close"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -164,11 +164,10 @@ export function ProfileManagementModal({
 
         {error && (
           <div
-            className="mb-4 p-3 text-xs font-semibold rounded-2xl border text-center"
+            className="mb-4 p-3 text-xs font-semibold rounded-2xl text-center"
             style={{
               backgroundColor: "var(--pastel-error-bg)",
               color: "var(--pastel-error-text)",
-              borderColor: "var(--pastel-error-border)",
             }}
           >
             {error}
@@ -177,11 +176,10 @@ export function ProfileManagementModal({
 
         {success && (
           <div
-            className="mb-4 p-3 text-xs font-semibold rounded-2xl border text-center"
+            className="mb-4 p-3 text-xs font-semibold rounded-2xl text-center"
             style={{
               backgroundColor: "var(--pastel-success-bg)",
               color: "var(--pastel-success-text)",
-              borderColor: "var(--pastel-success-border)",
             }}
           >
             {success}
@@ -191,8 +189,8 @@ export function ProfileManagementModal({
         <form onSubmit={handleSave} className="space-y-4">
           
           {/* Profile Picture Upload */}
-          <div className="flex items-center gap-4 p-3.5 bg-[var(--pastel-tint)]/25 rounded-2xl border border-[var(--pastel-border)]/60">
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--pastel-tint)] border-2 border-[var(--pastel-border)] flex items-center justify-center text-lg font-bold shrink-0 shadow-2xs" style={{ color: "var(--pastel-primary)" }}>
+          <div className="flex items-center gap-4 p-3.5 bg-[var(--pastel-tint)] rounded-2xl">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--pastel-card)] flex items-center justify-center text-lg font-bold shrink-0 shadow-2xs" style={{ color: "var(--pastel-accent-text)" }}>
               {photoURL ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
@@ -206,7 +204,7 @@ export function ProfileManagementModal({
                 Profile Photo
               </label>
               <div className="flex gap-2">
-                <label className="cursor-pointer px-3 py-1.5 bg-[var(--pastel-card)] border border-[var(--pastel-border)] hover:bg-[var(--pastel-tint)] text-[var(--pastel-text)] rounded-xl text-xs font-bold transition-all shadow-2xs">
+                <label className="cursor-pointer px-3.5 py-1.5 bg-[var(--pastel-card)] hover:opacity-90 text-[var(--pastel-text)] rounded-full text-xs font-bold transition-all shadow-2xs">
                   <span>{uploadingPhoto ? "Processing..." : "Upload Photo"}</span>
                   <input
                     type="file"
@@ -220,7 +218,7 @@ export function ProfileManagementModal({
                   <button
                     type="button"
                     onClick={() => setPhotoURL("")}
-                    className="px-2.5 py-1.5 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-error-text)] font-semibold"
+                    className="px-2.5 py-1.5 text-xs text-[var(--pastel-subtext)] hover:text-[var(--pastel-error-text)] font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
@@ -241,8 +239,8 @@ export function ProfileManagementModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your cute nickname"
-              className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
+              placeholder="Your display name"
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
             />
           </div>
 
@@ -252,13 +250,13 @@ export function ProfileManagementModal({
               Username (@handle)
             </label>
             <div className="relative flex items-center">
-              <span className="absolute left-3 text-xs font-bold text-[var(--pastel-subtext)]">@</span>
+              <span className="absolute left-3.5 text-xs font-bold text-[var(--pastel-subtext)]">@</span>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-                placeholder="cozy_nomad"
-                className="w-full pl-7 pr-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
+                placeholder="username"
+                className="w-full pl-7 pr-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
                 required
               />
             </div>
@@ -275,12 +273,12 @@ export function ProfileManagementModal({
               value={favSong}
               onChange={(e) => setFavSong(e.target.value)}
               placeholder="e.g. JVKE - Golden Hour (or Spotify link)"
-              className="w-full px-3.5 py-2.5 rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
             />
           </div>
 
           {/* Change Password (Optional) */}
-          <div className="pt-2 border-t border-[var(--pastel-border)]/50 space-y-3">
+          <div className="pt-2 border-t border-[var(--pastel-border)] space-y-3">
             <span className="text-xs font-bold text-[var(--pastel-text)] block">
               Change Password (optional)
             </span>
@@ -291,7 +289,7 @@ export function ProfileManagementModal({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="New password"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               />
               <input
                 type="password"
@@ -299,24 +297,24 @@ export function ProfileManagementModal({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm password"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-xs text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               />
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2.5 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 bg-[var(--pastel-tint)] hover:bg-[var(--pastel-border)] text-[var(--pastel-text)] font-bold rounded-2xl text-xs transition-colors cursor-pointer"
+              className="flex-1 py-3 bg-[var(--pastel-tint)] hover:opacity-85 text-[var(--pastel-text)] font-bold rounded-full text-xs transition-opacity cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-3 bg-[var(--pastel-primary)] hover:opacity-90 text-white font-bold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-3 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] font-bold rounded-full text-xs transition-all portfolio-shadow disabled:opacity-50 cursor-pointer"
             >
               {saving ? "Saving..." : "Save Profile"}
             </button>

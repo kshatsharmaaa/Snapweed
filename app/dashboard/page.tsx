@@ -98,7 +98,6 @@ export default function Dashboard() {
           setCurrentTheme(chosen);
           applyPastelTheme(chosen, prefMode);
         } else {
-          // Fallback initial profile
           const fallbackUsername = currentUser.email?.split("@")[0] || "friend";
           const chosen = stored || DEFAULT_THEME_ID;
           const initProfile: UserProfileData = {
@@ -146,7 +145,6 @@ export default function Dashboard() {
     setRoomError("");
 
     try {
-      // 6-digit room code
       const code = Math.floor(100000 + Math.random() * 900000).toString();
 
       const roomData: Record<string, unknown> = {
@@ -199,7 +197,6 @@ export default function Dashboard() {
       const roomDoc = querySnapshot.docs[0];
       const data = roomDoc.data();
 
-      // Check room password if configured
       if (data.roomPassword && data.createdBy !== user.uid) {
         if (joinPassword !== data.roomPassword) {
           setRoomError("Incorrect room password.");
@@ -227,12 +224,13 @@ export default function Dashboard() {
         className="min-h-screen flex items-center justify-center transition-colors"
         style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-subtext)" }}
       >
-        <div className="flex flex-col items-center gap-2">
-          <div 
-            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "var(--pastel-primary)", borderTopColor: "transparent" }}
-          />
-          <span className="text-xs font-bold">loading snapweed...</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="portfolio-dot" />
+            <span className="portfolio-dot" />
+            <span className="portfolio-dot" />
+          </div>
+          <span className="text-xs font-bold tracking-wide uppercase">loading snapweed...</span>
         </div>
       </div>
     );
@@ -241,29 +239,31 @@ export default function Dashboard() {
   if (!user || !profile) return null;
 
   const activeThemeId = currentTheme || profile.themeColor || DEFAULT_THEME_ID;
+  const activeThemeMeta = PASTEL_THEMES[activeThemeId] || PASTEL_THEMES[DEFAULT_THEME_ID];
 
   return (
     <div 
-      className="min-h-screen pb-16 transition-colors duration-200"
+      className="min-h-screen pb-20 transition-colors duration-300"
       style={{ backgroundColor: "var(--pastel-bg)", color: "var(--pastel-text)" }}
     >
       
-      {/* Top Friendly Nav */}
+      {/* Clean Borderless Frosted Nav */}
       <nav 
-        className="backdrop-blur-md border-b sticky top-0 z-30 transition-colors"
-        style={{ backgroundColor: "var(--pastel-nav)", borderColor: "var(--pastel-border)" }}
+        className="backdrop-blur-md sticky top-0 z-30 transition-colors"
+        style={{ backgroundColor: "var(--pastel-nav)" }}
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex justify-between items-center">
           
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black tracking-tight" style={{ color: "var(--pastel-text)" }}>
+          {/* Wordmark + subtle portfolio tri-pastel dot */}
+          <div className="flex items-center gap-2.5">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--pastel-primary)" }} aria-hidden="true" />
+            <span className="text-xl font-extrabold tracking-tight" style={{ color: "var(--pastel-text)" }}>
               snapweed
             </span>
           </div>
 
-          {/* Notifications, Theme Mode, User info & Profile Button */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Toggle, Notifications, Profile & Sign out */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
             <ThemeModeToggle uid={user.uid} />
 
             <NotificationBell
@@ -280,17 +280,16 @@ export default function Dashboard() {
 
             <button
               onClick={() => setShowProfileModal(true)}
-              className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border hover:opacity-90 transition-all text-xs font-bold shadow-2xs cursor-pointer"
+              className="flex items-center gap-2 p-1 pr-3 rounded-full hover:opacity-90 transition-all text-xs font-bold portfolio-shadow cursor-pointer"
               style={{ 
-                backgroundColor: "var(--pastel-tint)", 
-                borderColor: "var(--pastel-border)",
+                backgroundColor: "var(--pastel-card)", 
                 color: "var(--pastel-text)"
               }}
               title="Edit Profile"
             >
               <div 
-                className="w-7 h-7 rounded-full overflow-hidden bg-[var(--pastel-card)] border flex items-center justify-center text-xs font-bold shadow-2xs"
-                style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-primary)" }}
+                className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
+                style={{ backgroundColor: "var(--pastel-tint)", color: "var(--pastel-accent-text)" }}
               >
                 {profile.photoURL ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -301,7 +300,7 @@ export default function Dashboard() {
               </div>
               <div className="flex flex-col text-left">
                 <span className="leading-tight">{profile.name}</span>
-                <span className="text-[10px] font-semibold" style={{ color: "var(--pastel-subtext)" }}>
+                <span className="text-[10px] font-medium" style={{ color: "var(--pastel-subtext)" }}>
                   @{profile.username}
                 </span>
               </div>
@@ -309,7 +308,7 @@ export default function Dashboard() {
 
             <button
               onClick={handleSignOut}
-              className="text-xs font-bold px-2 py-1 rounded-xl transition-colors hover:opacity-80 cursor-pointer"
+              className="text-xs font-bold px-2.5 py-1.5 rounded-full transition-opacity hover:opacity-75 cursor-pointer"
               style={{ color: "var(--pastel-subtext)" }}
             >
               Sign out
@@ -319,237 +318,242 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* Main Body */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+      {/* Main Content — Open Editorial Flow directly on Pastel Canvas */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 space-y-10">
         
-        {/* Pastel Theme Selector Right on Top of the Screen */}
-        <div 
-          className="bg-[var(--pastel-card)] rounded-3xl p-5 border shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all"
-          style={{ borderColor: "var(--pastel-border)" }}
-        >
-          <div>
-            <h2 className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--pastel-text)" }}>
-              Choose Your Pastel Theme
-            </h2>
-            <p className="text-xs" style={{ color: "var(--pastel-subtext)" }}>
-              Pick one of our 6 curated colors &bull; saves directly to your profile
-            </p>
+        {/* Hero Greeting & Minimalist Floating Palette Swatches (No outer box!) */}
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2" aria-hidden="true">
+              <span className="h-1 w-7 rounded-full" style={{ backgroundColor: "var(--portfolio-pink)" }} />
+              <span className="h-1 w-7 rounded-full" style={{ backgroundColor: "var(--portfolio-green)" }} />
+              <span className="h-1 w-7 rounded-full" style={{ backgroundColor: "var(--portfolio-blue)" }} />
+            </div>
+
+            <div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                Hey, {profile.name}
+              </h1>
+              <p className="text-xs sm:text-sm font-medium mt-1" style={{ color: "var(--pastel-subtext)" }}>
+                @{profile.username}
+              </p>
+            </div>
+
+            {profile.favSong && (
+              <div className="pt-0.5">
+                <FavoriteSongBanner
+                  favSong={profile.favSong}
+                  onChangeClick={() => setShowProfileModal(true)}
+                />
+              </div>
+            )}
           </div>
 
-          {/* 6 Curated Pastel Buttons */}
-          <div className="flex flex-wrap gap-2">
-            {Object.values(PASTEL_THEMES).map((th) => {
-              const isActive = activeThemeId === th.id;
-              const palette = getPastelPalette(th.id, activeMode);
-              return (
-                <button
-                  key={th.id}
-                  type="button"
-                  onClick={() => handleSelectPastelTheme(th.id)}
-                  className={`px-3 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-2 transition-all shadow-2xs border cursor-pointer ${
-                    isActive
-                      ? "ring-2 scale-105 shadow-xs"
-                      : "opacity-80 hover:opacity-100 hover:scale-102"
-                  }`}
-                  style={{
-                    backgroundColor: palette.tint,
-                    borderColor: isActive ? palette.primary : palette.border,
-                    color: palette.text,
-                    outlineColor: palette.primary,
-                  }}
-                  title={th.name}
-                >
-                  <span 
-                    className="w-2.5 h-2.5 rounded-full shrink-0" 
-                    style={{ backgroundColor: palette.primary }} 
+          {/* Minimalist Pastel Swatch Bar (Borderless floating pill) */}
+          <div className="flex flex-col items-start md:items-end gap-1.5 shrink-0">
+            <span className="text-[11px] font-bold px-1" style={{ color: "var(--pastel-subtext)" }}>
+              Theme: <span style={{ color: "var(--pastel-accent-text)" }}>{activeThemeMeta.name}</span>
+            </span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--pastel-card)] portfolio-shadow">
+              {Object.values(PASTEL_THEMES).map((th) => {
+                const isActive = activeThemeId === th.id;
+                const palette = getPastelPalette(th.id, activeMode);
+                return (
+                  <button
+                    key={th.id}
+                    type="button"
+                    onClick={() => handleSelectPastelTheme(th.id)}
+                    className={`w-6 h-6 rounded-full transition-all cursor-pointer flex items-center justify-center ${
+                      isActive
+                        ? "scale-115 ring-2 ring-[var(--pastel-text)] ring-offset-2 ring-offset-[var(--pastel-card)]"
+                        : "opacity-75 hover:opacity-100 hover:scale-105"
+                    }`}
+                    style={{
+                      backgroundColor: palette.primary,
+                    }}
+                    title={th.name}
+                    aria-label={`Switch theme to ${th.name}`}
+                    aria-pressed={isActive}
                   />
-                  <span>{th.name}</span>
-                  {isActive && (
-                    <span 
-                      className="text-[9px] px-1 py-0.2 rounded-full font-bold text-white leading-tight"
-                      style={{ backgroundColor: palette.primary }}
-                    >
-                      Active
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Favorite Song Card (if user has set one) */}
-        {profile.favSong && (
-          <FavoriteSongBanner
-            favSong={profile.favSong}
-            onChangeClick={() => setShowProfileModal(true)}
-          />
-        )}
-
-        {/* Room Error Banner */}
+        {/* Room Error Notice */}
         {roomError && (
           <div
-            className="p-3 text-xs font-bold rounded-2xl border text-center"
+            className="p-3.5 text-xs font-bold rounded-2xl text-center portfolio-shadow"
             style={{
               backgroundColor: "var(--pastel-error-bg)",
               color: "var(--pastel-error-text)",
-              borderColor: "var(--pastel-error-border)",
             }}
           >
             {roomError}
           </div>
         )}
 
-        {/* SECTION 1: Chat Rooms (Cozy, Clear, Non-Vague) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          
-          {/* Create Room Card */}
-          <div className="bg-[var(--pastel-card)] rounded-3xl p-6 border border-[var(--pastel-border)] shadow-xs flex flex-col justify-between space-y-4">
-            <div>
-              <div 
-                className="w-10 h-10 rounded-2xl border flex items-center justify-center text-xs font-black tracking-wider uppercase mb-3 shadow-2xs"
-                style={{ backgroundColor: "var(--pastel-tint)", borderColor: "var(--pastel-border)", color: "var(--pastel-primary)" }}
-              >
-                Room
+        {/* SECTION 1: Chat Rooms */}
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Create Room Panel — Borderless Portfolio Curve */}
+            <div className="bg-[var(--pastel-card)] portfolio-panel p-6 sm:p-7 portfolio-shadow flex flex-col justify-between space-y-5 transition-all">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="h-1 w-8 rounded-full" style={{ backgroundColor: "var(--portfolio-pink)" }} aria-hidden="true" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--pastel-subtext)" }}>
+                    Host
+                  </span>
+                </div>
+                <h3 className="text-lg font-extrabold text-[var(--pastel-text)] tracking-tight">
+                  Create a Chat Room
+                </h3>
+                <p className="text-xs text-[var(--pastel-subtext)] mt-1.5 leading-relaxed">
+                  Generate an instant 6-digit room code to share with a friend or group.
+                </p>
+
+                {/* Optional Room Password */}
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordInput(!showPasswordInput)}
+                    className="text-[11px] font-bold hover:underline cursor-pointer"
+                    style={{ color: "var(--pastel-accent-text)" }}
+                  >
+                    {showPasswordInput ? "- Remove Password" : "+ Add Secret Room Password (Optional)"}
+                  </button>
+
+                  {showPasswordInput && (
+                    <input
+                      type="password"
+                      autoComplete="new-password"
+                      value={createRoomPassword}
+                      onChange={(e) => setCreateRoomPassword(e.target.value)}
+                      placeholder="Enter optional password"
+                      className="mt-2.5 w-full px-4 py-2.5 text-xs rounded-2xl bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
+                    />
+                  )}
+                </div>
               </div>
-              <h3 className="text-base font-black text-[var(--pastel-text)]">
-                Create a Chat Room
-              </h3>
-              <p className="text-xs text-[var(--pastel-subtext)] mt-1">
-                Generate an instant real-time room code to share with a friend or group.
-              </p>
 
-              {/* Optional Room Password */}
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordInput(!showPasswordInput)}
-                  className="text-[11px] font-bold text-[var(--pastel-primary)] hover:underline"
-                >
-                  {showPasswordInput ? "- Remove Password" : "+ Add Secret Room Password (Optional)"}
-                </button>
+              <button
+                onClick={handleCreateRoom}
+                disabled={isCreating}
+                className="w-full py-3 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] font-bold rounded-full text-xs transition-all portfolio-shadow disabled:opacity-50 cursor-pointer"
+              >
+                {isCreating ? "Creating Room..." : "Create Room"}
+              </button>
+            </div>
 
-                {showPasswordInput && (
+            {/* Join Room Panel — Borderless Portfolio Curve */}
+            <div className="bg-[var(--pastel-card)] portfolio-panel p-6 sm:p-7 portfolio-shadow flex flex-col justify-between space-y-5 transition-all">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="h-1 w-8 rounded-full" style={{ backgroundColor: "var(--portfolio-green)" }} aria-hidden="true" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--pastel-subtext)" }}>
+                    Join
+                  </span>
+                </div>
+                <h3 className="text-lg font-extrabold text-[var(--pastel-text)] tracking-tight">
+                  Join a Chat Room
+                </h3>
+                <p className="text-xs text-[var(--pastel-subtext)] mt-1.5 leading-relaxed">
+                  Enter your friend&apos;s 6-digit code to jump straight into the chat.
+                </p>
+
+                <form id="join-room-form" onSubmit={handleJoinRoom} className="mt-4 space-y-2.5">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.replace(/[^0-9]/g, ""))}
+                    placeholder="000000"
+                    className="w-full py-2.5 px-4 text-center text-lg font-mono tracking-[0.4em] rounded-2xl bg-[var(--pastel-input)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] font-bold text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] transition-all"
+                    required
+                  />
+
                   <input
                     type="password"
-                    autoComplete="new-password"
-                    value={createRoomPassword}
-                    onChange={(e) => setCreateRoomPassword(e.target.value)}
-                    placeholder="Enter optional password"
-                    className="mt-2 w-full px-3 py-1.5 text-xs rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+                    autoComplete="off"
+                    value={joinPassword}
+                    onChange={(e) => setJoinPassword(e.target.value)}
+                    placeholder="Password (if room is protected)"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl bg-[var(--pastel-input)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
                   />
-                )}
+                </form>
               </div>
-            </div>
 
-            <button
-              onClick={handleCreateRoom}
-              disabled={isCreating}
-              className="w-full py-3 bg-[var(--pastel-primary)] hover:opacity-90 text-white font-bold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-            >
-              {isCreating ? "Creating Room..." : "Create Room"}
-            </button>
-          </div>
-
-          {/* Join Room Card */}
-          <div className="bg-[var(--pastel-card)] rounded-3xl p-6 border border-[var(--pastel-border)] shadow-xs flex flex-col justify-between space-y-4">
-            <div>
-              <div 
-                className="w-10 h-10 rounded-2xl border flex items-center justify-center text-xs font-black tracking-wider uppercase mb-3 shadow-2xs"
-                style={{ backgroundColor: "var(--pastel-tint)", borderColor: "var(--pastel-border)", color: "var(--pastel-primary)" }}
+              <button
+                type="submit"
+                form="join-room-form"
+                disabled={isJoining || joinCode.length !== 6}
+                className={`w-full py-3 font-bold rounded-full text-xs transition-all cursor-pointer ${
+                  joinCode.length === 6 && !isJoining
+                    ? "bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] portfolio-shadow"
+                    : "bg-[var(--pastel-tint)] text-[var(--pastel-subtext)] opacity-80 cursor-not-allowed"
+                }`}
               >
-                Join
-              </div>
-              <h3 className="text-base font-black text-[var(--pastel-text)]">
-                Join a Chat Room
-              </h3>
-              <p className="text-xs text-[var(--pastel-subtext)] mt-1">
-                Enter your friend&apos;s 6-digit room code to jump straight into the chat.
-              </p>
+                {isJoining ? "Joining Room..." : "Join Chat Room"}
+              </button>
+            </div>
 
-              <form onSubmit={handleJoinRoom} className="mt-3 space-y-2">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value.replace(/[^0-9]/g, ""))}
-                  placeholder="000000"
-                  className="w-full py-2.5 px-3 text-center text-2xl font-mono tracking-widest rounded-2xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] font-bold text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)]"
-                  required
-                />
+          </div>
+        </section>
 
-                <input
-                  type="password"
-                  autoComplete="off"
-                  value={joinPassword}
-                  onChange={(e) => setJoinPassword(e.target.value)}
-                  placeholder="Password (if room is protected)"
-                  className="w-full py-2 px-3 text-xs rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
-                />
-
-                <button
-                  type="submit"
-                  disabled={isJoining || joinCode.length !== 6}
-                  className="w-full py-3 bg-[var(--pastel-primary)] hover:opacity-90 text-white font-bold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50"
-                >
-                  {isJoining ? "Joining Room..." : "Join Chat Room"}
-                </button>
-              </form>
+        {/* SECTION 2: Community Feed */}
+        <section id="community-board" className="space-y-5 pt-2">
+          
+          <div className="flex items-center justify-between gap-4">
+            {/* Borderless Floating Pill Tabs */}
+            <div className="flex flex-wrap gap-1.5 p-1.5 bg-[var(--pastel-card)] rounded-full portfolio-shadow w-fit">
+              <button
+                onClick={() => setCommunityTab("questions")}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  communityTab === "questions"
+                    ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] shadow-2xs"
+                    : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
+                }`}
+              >
+                Questions
+              </button>
+              <button
+                onClick={() => setCommunityTab("blogs")}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  communityTab === "blogs"
+                    ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] shadow-2xs"
+                    : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
+                }`}
+              >
+                Logs &amp; Blogs
+              </button>
+              <button
+                onClick={() => setCommunityTab("songs")}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  communityTab === "songs"
+                    ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] shadow-2xs"
+                    : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
+                }`}
+              >
+                Soundtrack
+              </button>
+              <button
+                onClick={() => setCommunityTab("feedback")}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  communityTab === "feedback"
+                    ? "bg-[var(--pastel-primary)] text-[var(--pastel-on-primary)] shadow-2xs"
+                    : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
+                }`}
+              >
+                Feedback
+              </button>
             </div>
           </div>
 
-        </div>
-
-        {/* SECTION 2: Community Board (Questions, Blogs, Song Recs, Feedback) */}
-        <div id="community-board" className="space-y-4">
-          
-          {/* Sub-Tabs: Clean and Simple */}
-          <div className="flex flex-wrap gap-2 p-1.5 bg-[var(--pastel-card)] rounded-2xl border border-[var(--pastel-border)] shadow-2xs w-fit">
-            <button
-              onClick={() => setCommunityTab("questions")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                communityTab === "questions"
-                  ? "bg-[var(--pastel-primary)] text-white shadow-xs"
-                  : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
-              }`}
-            >
-              Questions for All
-            </button>
-            <button
-              onClick={() => setCommunityTab("blogs")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                communityTab === "blogs"
-                  ? "bg-[var(--pastel-primary)] text-white shadow-xs"
-                  : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
-              }`}
-            >
-              Personal Logs &amp; Blogs
-            </button>
-            <button
-              onClick={() => setCommunityTab("songs")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                communityTab === "songs"
-                  ? "bg-[var(--pastel-primary)] text-white shadow-xs"
-                  : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
-              }`}
-            >
-              Soundtrack &amp; Songs
-            </button>
-            <button
-              onClick={() => setCommunityTab("feedback")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                communityTab === "feedback"
-                  ? "bg-[var(--pastel-primary)] text-white shadow-xs"
-                  : "text-[var(--pastel-subtext)] hover:text-[var(--pastel-text)]"
-              }`}
-            >
-              Feedback &amp; Suggestions
-            </button>
-          </div>
-
-          {/* Active Tab View */}
+          {/* Active Tab View (Un-nested directly on canvas!) */}
           {communityTab === "questions" && (
             <QuestionsBoard
               currentUid={user.uid}
@@ -581,7 +585,7 @@ export default function Dashboard() {
             <FeedbackBoard currentName={profile.name || profile.username} />
           )}
 
-        </div>
+        </section>
 
       </main>
 

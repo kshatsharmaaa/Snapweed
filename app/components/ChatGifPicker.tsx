@@ -99,11 +99,10 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="px-2.5 py-2 rounded-full border text-[11px] font-black tracking-tight transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0"
+        className="px-2.5 py-2 rounded-full text-[11px] font-black tracking-tight transition-all shadow-2xs hover:opacity-85 cursor-pointer flex items-center justify-center shrink-0"
         style={{
-          backgroundColor: isOpen ? "var(--pastel-border)" : "var(--pastel-tint)",
-          borderColor: "var(--pastel-border)",
-          color: "var(--pastel-text)",
+          backgroundColor: isOpen ? "var(--pastel-primary)" : "var(--pastel-tint)",
+          color: isOpen ? "var(--pastel-on-primary)" : "var(--pastel-text)",
         }}
         title="Send a GIF"
         aria-label="Open GIF picker"
@@ -112,16 +111,12 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
       </button>
 
       {isOpen && (
-        <div
-          className="absolute bottom-full left-0 mb-2.5 w-80 sm:w-96 bg-[var(--pastel-card)] rounded-3xl border shadow-xl z-50 overflow-hidden"
-          style={{ borderColor: "var(--pastel-border)" }}
-        >
+        <div className="absolute bottom-full left-0 mb-2.5 w-80 sm:w-96 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow z-50 overflow-hidden">
           {/* Search Input */}
           <div
-            className="p-2.5 border-b space-y-2"
+            className="p-2.5 space-y-2"
             style={{
               backgroundColor: "var(--pastel-tint)",
-              borderColor: "var(--pastel-border)",
             }}
           >
             <input
@@ -129,9 +124,8 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search GIFs or paste a .gif URL..."
-              className="w-full px-3 py-1.5 rounded-xl border bg-[var(--pastel-card)] text-xs focus:outline-none focus:ring-2"
+              className="w-full px-3.5 py-1.5 rounded-full bg-[var(--pastel-card)] text-xs focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
               style={{
-                borderColor: "var(--pastel-border)",
                 color: "var(--pastel-text)",
               }}
             />
@@ -149,10 +143,10 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
                         setQuery("");
                         setActiveCategory(cat.id);
                       }}
-                      className="px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer shrink-0"
+                      className="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer shrink-0"
                       style={{
                         backgroundColor: active ? "var(--pastel-primary)" : "var(--pastel-card)",
-                        color: active ? "#ffffff" : "var(--pastel-subtext)",
+                        color: active ? "var(--pastel-on-primary)" : "var(--pastel-subtext)",
                       }}
                     >
                       {cat.label}
@@ -171,16 +165,18 @@ export function ChatGifPicker({ onSelectGif }: ChatGifPickerProps) {
                 <img
                   src={trimmedQuery}
                   alt="Custom GIF preview"
-                  className="max-h-40 mx-auto rounded-2xl object-contain border"
-                  style={{ borderColor: "var(--pastel-border)" }}
+                  className="max-h-40 mx-auto rounded-2xl object-contain"
                 />
                 <button
                   type="button"
                   onClick={() =>
                     handleChoose({ url: trimmedQuery, title: "Shared GIF" })
                   }
-                  className="w-full py-2 rounded-2xl text-xs font-bold text-white shadow-xs cursor-pointer hover:opacity-90"
-                  style={{ backgroundColor: "var(--pastel-primary)" }}
+                  className="w-full py-2 rounded-full text-xs font-bold shadow-xs cursor-pointer hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--pastel-primary)",
+                    color: "var(--pastel-on-primary)",
+                  }}
                 >
                   Send GIF
                 </button>

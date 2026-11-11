@@ -235,17 +235,16 @@ function FloatingToastCard({
 
   return (
     <div
-      className="pointer-events-auto backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.16)] p-3.5 animate-toast-in flex items-start gap-2.5 cursor-pointer hover:opacity-95 transition-opacity"
-      style={{ backgroundColor: "var(--pastel-nav)", borderColor: "var(--pastel-border)" }}
+      className="pointer-events-auto backdrop-blur-md rounded-2xl portfolio-shadow p-3.5 animate-toast-in flex items-start gap-2.5 cursor-pointer hover:opacity-95 transition-opacity"
+      style={{ backgroundColor: "var(--pastel-card)" }}
       onClick={() => onSelect(toast)}
       role="status"
     >
       <span
-        className="mt-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 border"
+        className="mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
         style={{
           backgroundColor: "var(--pastel-tint)",
-          borderColor: "var(--pastel-border)",
-          color: "var(--pastel-primary)",
+          color: "var(--pastel-accent-text)",
         }}
       >
         {getNotificationBadgeLabel(toast.kind)}
@@ -256,7 +255,7 @@ function FloatingToastCard({
           <p className="text-xs font-black truncate" style={{ color: "var(--pastel-text)" }}>
             {toast.title}
           </p>
-          <span className="text-[10px] font-semibold shrink-0" style={{ color: "var(--pastel-primary)" }}>
+          <span className="text-[10px] font-bold shrink-0" style={{ color: "var(--pastel-accent-text)" }}>
             Just now
           </span>
         </div>
@@ -702,10 +701,9 @@ export function NotificationBell({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative p-2 rounded-full border transition-all shadow-2xs hover:opacity-90 cursor-pointer flex items-center justify-center"
+        className="relative p-2 rounded-full transition-all portfolio-shadow hover:opacity-90 cursor-pointer flex items-center justify-center"
         style={{
-          backgroundColor: isOpen ? "var(--pastel-border)" : "var(--pastel-tint)",
-          borderColor: "var(--pastel-border)",
+          backgroundColor: isOpen ? "var(--pastel-tint)" : "var(--pastel-card)",
           color: "var(--pastel-text)",
         }}
         title="Notifications"
@@ -728,8 +726,11 @@ export function NotificationBell({
 
         {unreadCount > 0 && (
           <span
-            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black text-white flex items-center justify-center shadow-xs"
-            style={{ backgroundColor: "var(--pastel-primary)" }}
+            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black flex items-center justify-center shadow-xs"
+            style={{
+              backgroundColor: "var(--pastel-primary)",
+              color: "var(--pastel-on-primary)",
+            }}
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
@@ -739,25 +740,26 @@ export function NotificationBell({
       {/* Dropdown Popover */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[var(--pastel-card)] rounded-3xl border shadow-xl z-50 overflow-hidden"
-          style={{ borderColor: "var(--pastel-border)" }}
+          className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow z-50 overflow-hidden"
         >
           {/* Header */}
           <div
-            className="px-4 py-3 border-b flex items-center justify-between gap-2"
+            className="px-4 py-3 flex items-center justify-between gap-2"
             style={{
               backgroundColor: "var(--pastel-tint)",
-              borderColor: "var(--pastel-border)",
             }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black" style={{ color: "var(--pastel-text)" }}>
+              <span className="text-xs font-extrabold" style={{ color: "var(--pastel-text)" }}>
                 Notifications
               </span>
               {unreadCount > 0 && (
                 <span
-                  className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
-                  style={{ backgroundColor: "var(--pastel-primary)" }}
+                  className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  style={{
+                    backgroundColor: "var(--pastel-primary)",
+                    color: "var(--pastel-on-primary)",
+                  }}
                 >
                   {unreadCount} new
                 </span>
@@ -769,9 +771,8 @@ export function NotificationBell({
                 <button
                   type="button"
                   onClick={handleRequestDesktopPermission}
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--pastel-card)] border hover:opacity-85 cursor-pointer"
+                  className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[var(--pastel-card)] hover:opacity-85 cursor-pointer"
                   style={{
-                    borderColor: "var(--pastel-border)",
                     color: "var(--pastel-text)",
                   }}
                   title="Get browser popups even when tab is in background"
@@ -781,10 +782,9 @@ export function NotificationBell({
               )}
               {desktopPerm === "granted" && (
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--pastel-card)] border"
+                  className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[var(--pastel-card)]"
                   style={{
-                    borderColor: "var(--pastel-border)",
-                    color: "var(--pastel-primary)",
+                    color: "var(--pastel-accent-text)",
                   }}
                 >
                   Desktop on
@@ -792,9 +792,8 @@ export function NotificationBell({
               )}
               {desktopPerm === "denied" && (
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--pastel-card)] border"
+                  className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[var(--pastel-card)]"
                   style={{
-                    borderColor: "var(--pastel-border)",
                     color: "var(--pastel-subtext)",
                   }}
                   title="Allow notifications for this site in your browser settings"
@@ -807,7 +806,7 @@ export function NotificationBell({
                   type="button"
                   onClick={handleMarkAllRead}
                   className="text-[11px] font-bold hover:underline cursor-pointer"
-                  style={{ color: "var(--pastel-primary)" }}
+                  style={{ color: "var(--pastel-accent-text)" }}
                 >
                   Mark all read
                 </button>
@@ -817,18 +816,15 @@ export function NotificationBell({
 
           {desktopPerm === "denied" && (
             <div
-              className="px-4 py-2 border-b text-[11px] bg-[var(--pastel-card)]"
-              style={{ borderColor: "var(--pastel-border)", color: "var(--pastel-subtext)" }}
+              className="px-4 py-2 text-[11px] bg-[var(--pastel-card)]"
+              style={{ color: "var(--pastel-subtext)" }}
             >
               Browser notifications are blocked. Allow notifications for this site in browser settings to receive outside-window popups.
             </div>
           )}
 
           {/* Filter Tabs */}
-          <div
-            className="px-3 py-2 border-b flex gap-1.5 bg-[var(--pastel-card)]"
-            style={{ borderColor: "var(--pastel-border)" }}
-          >
+          <div className="px-3 py-2 flex gap-1.5 bg-[var(--pastel-card)]">
             {(["all", "posts", "likes"] as const).map((tabKey) => {
               const active = filter === tabKey;
               return (
@@ -836,10 +832,10 @@ export function NotificationBell({
                   key={tabKey}
                   type="button"
                   onClick={() => setFilter(tabKey)}
-                  className="px-2.5 py-1 rounded-xl text-[11px] font-bold capitalize transition-all cursor-pointer"
+                  className="px-3 py-1 rounded-full text-[11px] font-bold capitalize transition-all cursor-pointer"
                   style={{
                     backgroundColor: active ? "var(--pastel-primary)" : "var(--pastel-tint)",
-                    color: active ? "#ffffff" : "var(--pastel-subtext)",
+                    color: active ? "var(--pastel-on-primary)" : "var(--pastel-subtext)",
                   }}
                 >
                   {tabKey}
@@ -874,11 +870,10 @@ export function NotificationBell({
                     }}
                   >
                     <span
-                      className="mt-0.5 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 border"
+                      className="mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
                       style={{
-                        backgroundColor: "var(--pastel-card)",
-                        borderColor: "var(--pastel-border)",
-                        color: "var(--pastel-primary)",
+                        backgroundColor: "var(--pastel-input)",
+                        color: "var(--pastel-accent-text)",
                       }}
                     >
                       {getNotificationBadgeLabel(item.kind)}
@@ -901,7 +896,7 @@ export function NotificationBell({
                     {isUnread && (
                       <span
                         className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                        style={{ backgroundColor: "var(--pastel-primary)" }}
+                        style={{ backgroundColor: "var(--pastel-accent-text)" }}
                         title="Unread"
                       />
                     )}
@@ -923,8 +918,8 @@ export function NotificationBell({
           >
             {desktopPerm === "default" && !promptDismissed && (
               <div
-                className="pointer-events-auto backdrop-blur-md rounded-2xl border shadow-[0_12px_32px_rgba(0,0,0,0.16)] p-3.5 animate-toast-in"
-                style={{ backgroundColor: "var(--pastel-nav)", borderColor: "var(--pastel-border)" }}
+                className="pointer-events-auto backdrop-blur-md rounded-2xl portfolio-shadow p-3.5 animate-toast-in"
+                style={{ backgroundColor: "var(--pastel-card)" }}
                 role="region"
                 aria-label="Enable desktop alerts"
               >
@@ -951,8 +946,11 @@ export function NotificationBell({
                   <button
                     type="button"
                     onClick={handleRequestDesktopPermission}
-                    className="px-3 py-1 rounded-xl text-[11px] font-bold text-white cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: "var(--pastel-primary)" }}
+                    className="px-3.5 py-1 rounded-full text-[11px] font-bold cursor-pointer hover:opacity-90 transition-opacity"
+                    style={{
+                      backgroundColor: "var(--pastel-primary)",
+                      color: "var(--pastel-on-primary)",
+                    }}
                   >
                     Enable alerts
                   </button>

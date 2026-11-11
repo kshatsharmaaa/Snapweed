@@ -146,25 +146,25 @@ export function FeedbackBoard({
   };
 
   return (
-    <div className="bg-[var(--pastel-card)] rounded-3xl p-6 sm:p-7 border border-[var(--pastel-border)] shadow-xs transition-colors">
-      {/* Header */}
-      <div className="mb-5">
-        <h3 className="text-lg font-black text-[var(--pastel-text)]">
+    <div className="space-y-6">
+      {/* Open Editorial Header */}
+      <div className="px-1">
+        <h3 className="text-base sm:text-lg font-extrabold text-[var(--pastel-text)] tracking-tight">
           Feedback &amp; Suggestions
         </h3>
-        <p className="text-xs text-[var(--pastel-subtext)]">
-          suggest new features, improvements, or changes you want to see &bull; public to everyone
+        <p className="text-xs text-[var(--pastel-subtext)] mt-0.5">
+          Suggest new features, improvements, or changes you want to see &bull; public to everyone
         </p>
       </div>
 
       {/* Submission Form */}
       <form
         onSubmit={handleSubmit}
-        className="mb-6 p-4 bg-[var(--pastel-tint)]/40 rounded-2xl border border-[var(--pastel-border)] space-y-3"
+        className="p-5 sm:p-6 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow space-y-3.5"
       >
         {needsNameInput ? (
           <div>
-            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1">
+            <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1.5">
               Your Display Name *
             </label>
             <input
@@ -173,7 +173,7 @@ export function FeedbackBoard({
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="Enter your display name"
               maxLength={80}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+              className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
               required
             />
           </div>
@@ -184,7 +184,7 @@ export function FeedbackBoard({
         )}
 
         <div>
-          <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1">
+          <label className="block text-xs font-bold text-[var(--pastel-text)] mb-1.5">
             Feedback or Requested Change *
           </label>
           <textarea
@@ -193,14 +193,14 @@ export function FeedbackBoard({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Share feedback, new features, or changes you want..."
             maxLength={2000}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--pastel-border)] bg-[var(--pastel-bg)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)]"
+            className="w-full px-4 py-2.5 rounded-2xl bg-[var(--pastel-input)] text-sm text-[var(--pastel-text)] placeholder-[var(--pastel-subtext)] focus:outline-none focus:ring-2 focus:ring-[var(--pastel-primary)] transition-all"
             required
           />
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
           {statusNotice ? (
-            <span className="text-xs font-bold text-[var(--pastel-primary)]">
+            <span className="text-xs font-bold" style={{ color: "var(--pastel-accent-text)" }}>
               {statusNotice}
             </span>
           ) : (
@@ -210,7 +210,7 @@ export function FeedbackBoard({
           <button
             type="submit"
             disabled={submitting || !message.trim() || (needsNameInput && !guestName.trim())}
-            className="px-4 py-2 bg-[var(--pastel-primary)] hover:opacity-90 text-white rounded-2xl text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+            className="px-5 py-2.5 bg-[var(--pastel-primary)] hover:opacity-90 text-[var(--pastel-on-primary)] rounded-full text-xs font-bold transition-all portfolio-shadow disabled:opacity-50 cursor-pointer"
           >
             {submitting ? "Submitting..." : "Submit Suggestion"}
           </button>
@@ -218,19 +218,19 @@ export function FeedbackBoard({
       </form>
 
       {/* Public Suggestions Feed */}
-      <div className="space-y-3">
+      <div className="space-y-3.5">
         {suggestions.length === 0 ? (
-          <div className="text-center py-8 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-tint)]/25 rounded-2xl border border-[var(--pastel-border)]/60">
+          <div className="text-center py-10 text-xs text-[var(--pastel-subtext)] bg-[var(--pastel-card)] rounded-3xl portfolio-shadow">
             No suggestions shared yet ~ be the first to suggest a new change!
           </div>
         ) : (
           suggestions.map((item) => (
             <div
               key={item.id}
-              className="p-4 bg-[var(--pastel-tint)]/20 rounded-2xl border border-[var(--pastel-border)]/70 hover:border-[var(--pastel-border)] transition-colors space-y-2"
+              className="p-5 bg-[var(--pastel-card)] rounded-3xl portfolio-shadow transition-all space-y-2"
             >
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-primary)] font-bold text-[11px] flex items-center justify-center border border-[var(--pastel-border)] shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="w-6 h-6 rounded-full bg-[var(--pastel-tint)] text-[var(--pastel-accent-text)] font-bold text-[11px] flex items-center justify-center shrink-0">
                   {item.displayName?.charAt(0)?.toUpperCase() || "U"}
                 </span>
                 <span className="text-xs font-bold text-[var(--pastel-text)]">
@@ -238,7 +238,7 @@ export function FeedbackBoard({
                 </span>
               </div>
 
-              <p className="text-xs sm:text-sm text-[var(--pastel-text)] leading-relaxed whitespace-pre-wrap pl-8">
+              <p className="text-xs sm:text-sm text-[var(--pastel-text)] leading-relaxed whitespace-pre-wrap pl-8 opacity-90">
                 {item.suggestion}
               </p>
             </div>
