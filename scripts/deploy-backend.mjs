@@ -30,8 +30,20 @@ async function deployBackend() {
         process.exit(1);
       }
 
-      const data = await res.json();
-      console.log(`Render deploy triggered! Deploy ID: ${data?.id || "created"} (Status: ${data?.status || "queued"})`);
+      const rawBody = await res.text();
+      let data = null;
+      if (rawBody.trim()) {
+        try {
+          data = JSON.parse(rawBody);
+        } catch {
+          data = null;
+        }
+      }
+
+      const deploy = data?.deploy || data;
+      console.log(
+        `Render deploy triggered (HTTP ${res.status})! Deploy ID: ${deploy?.id || "accepted"} (Status: ${deploy?.status || "queued"})`
+      );
       process.exit(0);
     } catch (err) {
       console.error("Failed to reach Render API:", err);
